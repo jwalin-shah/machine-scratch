@@ -1,5 +1,16 @@
 # Bootstrap script for machine-scratch
 # One command to go from clean macOS → full agent workstation.
+#
+# Downloads:
+#   CLI tools: rtk, bat, eza, fd, rg, jq, yq, gh, infisical, uv, node, direnv, fswatch
+#   Agent tools: llm-tldr, fastedit, cocoindex, cognee
+#   Provider tools: OpenRouter CLI, Daytona
+#   Apps: Claude, Codex, Cursor, Brave, Zen, Ghostty, Raycast
+#   AGY: requires manual download from agy.ai
+#   Repos: machine-scratch, firstmate, machine-bootstrap (agent-rules)
+#   Configs: zshrc, ssh, git, direnv, LaunchAgents
+#   Guard: tool-guard.sh wired into Claude, Codex, Cursor
+#
 # Run: curl -fsSL https://github.com/jwalin-shah/machine-scratch/raw/refs/heads/main/bin/bootstrap.sh | bash
 
 set -euo pipefail
@@ -126,7 +137,13 @@ echo "Then run: infisical init"
 echo ""
 
 # ── 17. Apps (casks) ──
-brew install --cask claude codex cursor brave-browser zen 2>/dev/null || true
+brew install --cask claude codex cursor brave-browser zen ghostty raycast 2>/dev/null || true
+
+# Download AGY manually — Go binary from Google
+# curl -fsSL -o /opt/homebrew/bin/agy https://github.com/jwalin-shah/machine-scratch/releases/download/v0.0.0/agy 2>/dev/null || true
+# chmod +x /opt/homebrew/bin/agy 2>/dev/null || true
+echo ""
+echo "=== Download AGY from agy.ai and place in /opt/homebrew/bin/agy ==="
 
 # ── 18. Done ──
 echo ""
