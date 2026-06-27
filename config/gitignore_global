@@ -1,0 +1,10 @@
+# ── Global gitignore ──
+# Install: git config --global core.excludesfile ~/.config/git/ignore
+
+.DS_Store
+*.pyc
+__pycache__/
+.venv/
+.env
+*.local
+.agent-rules/

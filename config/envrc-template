@@ -1,0 +1,6 @@
+# ── Per-project direnv + uv setup ──
+# Copy to projects/<name>/.envrc
+
+source_up
+layout uv
+export PROJECT_ROOT=$(pwd)
