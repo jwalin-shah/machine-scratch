@@ -118,6 +118,21 @@ AXI compliance:
 
 ## Enforcement model: deny by default, prove to unlock
 
+### Root cause of current enforcement failure
+
+The adversarial review (pass 2) found: **agent-level permissions override global permissions in opencode.json.**
+
+```json
+// Global: cat/ls/grep/find/du = deny ← this is correct
+// Agent build: "bash": "allow" ← this OVERRIDES the global
+```
+
+Fix: remove all agent-level `"permission"` blocks from opencode.json. The global bans then take effect. No harness-level hooks needed for OpenCode — just correct config.
+
+For Claude Code, Codex, and Cursor, the fix is **harness-level PreToolUse hooks** (Command Code pattern). The tool-guard.sh script intercepts before any tool executes.
+
+### The permission-check flow
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │                permission-check                      │
