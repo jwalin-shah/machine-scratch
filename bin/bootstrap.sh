@@ -1,6 +1,6 @@
 # Bootstrap script for machine-scratch
 # One command to go from clean macOS → full agent workstation.
-# Run: curl -fsSL https://raw.githubusercontent.com/jwalin-shah/machine-scratch/main/bin/bootstrap.sh | bash
+# Run: curl -fsSL https://github.com/jwalin-shah/machine-scratch/raw/refs/heads/main/bin/bootstrap.sh | bash
 
 set -euo pipefail
 
