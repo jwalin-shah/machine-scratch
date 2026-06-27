@@ -69,8 +69,8 @@ gh repo clone jwalin-shah/machine-scratch ~/projects/machine-scratch 2>/dev/null
   git clone https://github.com/jwalin-shah/machine-scratch.git ~/projects/machine-scratch
 gh repo clone jwalin-shah/firstmate ~/projects/firstmate 2>/dev/null || \
   git clone https://github.com/jwalin-shah/firstmate.git ~/projects/firstmate
-gh repo clone jwalin-shah/agent-rules ~/.agent-rules 2>/dev/null || \
-  git clone https://github.com/jwalin-shah/agent-rules.git ~/.agent-rules
+gh repo clone jwalin-shah/machine-bootstrap ~/.agent-rules 2>/dev/null || \
+  git clone https://github.com/jwalin-shah/machine-bootstrap.git ~/.agent-rules
 
 # Verify clones
 for d in ~/projects/machine-scratch ~/projects/firstmate ~/.agent-rules; do
