@@ -8,8 +8,20 @@
 ## Agent Config
 
 - OpenCode instructions load from `~/.agent-rules/` (symlink to machine-scratch).
-- Claude/Codex tool-guard hooks point at `~/bin/tool-guard.sh`.
+- Claude/Codex hooks → `~/bin/tool-guard.sh`. Cursor hooks → `~/bin/tool-guard-cursor.sh`.
 - Per-account Claude OAuth requires `/login` in each of `~/.claude-a`, `~/.claude-b` once.
+
+## fastedit edit (MLX not installed)
+
+`fastedit read` / `search` / `doctor` work. `fastedit edit` needs:
+
+```bash
+uv tool install "fastedits[mlx]" --force
+fastedit pull --model mlx-8bit
+mkdir -p ~/.fastedit/backups
+```
+
+Until then, agents should use normal patch/edit tools for writes.
 
 ## Missing / Planned Tools
 

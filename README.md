@@ -5,11 +5,12 @@
 ## What's here
 
 ```
-bin/            — tools (tool-guard.sh, bootstrap, etc.)
-config/         — templates for direnv, git, ssh, zsh, claude, codex, cursor
-design/         — design docs (Issue #1 tool set, Issue #2 bootstrap)
-launchd/        — LaunchAgent plists
-scripts/        — helper scripts
+bin/            — tool-guard, policy-render, install, verify, test scripts
+config/         — tool-policy.json, opencode, claude, launchers, launchd
+agent-rules/    — GLOBAL.md, TOOL_REGISTRY.md (→ ~/.agent-rules)
+docs/           — TOOL_POLICY.md, SETUP_INVENTORY.md, vendor ctx7 indexes
+skills/         — tool-policy, pioneer-api, inference-net (→ ~/.agents/skills)
+design/         — design docs
 PHILOSOPHY.md   — principles we operate by
 ```
 
@@ -36,9 +37,14 @@ been freshly reviewed for the target machine.
 
 | Tool | Purpose |
 |------|---------|
-| `llm-tldr` | Code analysis (AST, call graph, semantic search) |
-| `rtk` | Token-efficient wrappers (ls, read, grep, find, diff, etc.) |
-| `fastedit` | AST-aware editing (edit, rename, delete, move) |
-| `coco-axi` + `cognee-axi` | Code index + session memory |
-| `gh-axi` | GitHub interaction |
-| `tool-guard.sh` | PreToolUse hook — redirects bad tools, gates dangerous ones |
+| `rtk` | Token-efficient wrappers (read, grep, ls, find, git, gh, diff, test) |
+| `llm-tldr` | Repo structure, architecture, semantic search |
+| `fastedit` | AST-aware editing (read/search; edit needs MLX model) |
+| `gh-axi` | Token-efficient GitHub CLI |
+| `githits` | Indexed search across open-source code |
+| `ctx7` | Context7 docs lookup (+ `find-docs` skill) |
+| `cognee-cli` / `cocoindex-code` | Session memory + code indexing |
+| `inf` / `pioneer` | Inference.net Catalyst + Pioneer SLM platform |
+| `tool-guard.sh` | Cross-harness policy hook |
+
+Policy architecture: `docs/TOOL_POLICY.md`. Install: `bin/install-active-config.sh`. Verify: `bin/test-all-policy.sh`.

@@ -7,10 +7,10 @@ Source of truth: `~/projects/machine-scratch/agent-rules/`.
 
 ## Section 1: Tool Hierarchy — use in order, stop when sufficient
 
-1. **Structure first.** If `llm-tldr` is installed, use `llm-tldr structure <repo>` before opening more than 2 files in an unfamiliar repo. If not installed, use `fd`, `rg`, and targeted reads.
+1. **Structure first.** If `llm-tldr` is installed, use `llm-tldr structure <repo>` before opening more than 2 files in an unfamiliar repo. If not installed, use `rtk find`, `rtk grep`, and targeted `rtk read` slices.
 2. **File ops** — use **`rtk`** subcommands first: `rtk read`, `rtk grep`, `rtk ls`, `rtk find`, `rtk git`, `rtk gh`, `rtk diff`, `rtk test`. Do **not** call raw `rg`, `eza`, `fd`, `bat`, `git`, or `gh` in bash — policy denies them. Use `du -s` for disk usage (not `dust`, which is human-oriented). Use `jq` / `yq` for structured data mutation, and `rtk json/read` for displaying JSON to the agent. Use `gtimeout`/`timeout` only to bound live smoke tests. See TOOL_REGISTRY.md.
 3. **GitHub** — use `gh-axi` if installed; otherwise `gh` with compact JSON and narrow queries.
-4. **Public code examples** — use `githits-axi` only after it is installed and reviewed.
+4. **Public code examples** — use `githits` (CLI) for indexed open-source search.
 5. **Raw exact output** — `git` for local ops, `jq`, `yq`, small command outputs.
 
 ---
@@ -130,8 +130,8 @@ Read `~/.agent-rules/KNOWN_ISSUES.md` before any bash-heavy session.
 
 **Policy: no MCP servers.** Context7, GitHits, and Inference.net all have CLI/skills modes — we use those, not their MCP variants.
 
-**Unverified / not installed:** `fm-tasks`.
+**Partial / caveat:** `fastedit` — read/search work; `fastedit edit` needs MLX backend + pulled model (see KNOWN_ISSUES.md).
 
-**Planned (not required until installed):** `gh-axi`, `githits-axi`, `coco-axi`, `cognee-axi`, `context7` / `c7`.
+**Not installed:** `fm-tasks`.
 
-If a planned tool is missing, use the fallback in TOOL_REGISTRY.md and mention the gap.
+**Deprecated names (use base CLI instead):** `githits-axi` → `githits`, `coco-axi` → `cocoindex-code`, `cognee-axi` → `cognee-cli`, `context7`/`c7` → `ctx7`.

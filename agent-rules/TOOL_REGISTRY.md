@@ -16,7 +16,7 @@ Vendor harness schemas: `ctx7 docs` — see `docs/vendor/agent-harnesses/llms.tx
 |---|---|---|---|
 | `rtk` | ACTIVE | Token-optimized read/grep/ls/find/git/gh/diff/test | **Default for all file/git/github ops** |
 | `llm-tldr` | ACTIVE | Structure/arch/search on local code | Before opening many files |
-| `fastedit` | ACTIVE | AST-aware file edits | Direct bash when editing |
+| `fastedit` | ACTIVE | AST-aware file edits | read/search OK; edit needs MLX model (see KNOWN_ISSUES) |
 | `jq` / `yq` | ACTIVE | Structured data | Direct bash OK |
 | `du -s` / `du -sh` | ACTIVE | Parseable disk usage | Direct bash OK — not `dust` |
 | `gh-axi` | ACTIVE | Token-efficient GitHub CLI | Preferred over `rtk gh` for GitHub-heavy work |
@@ -39,6 +39,7 @@ Vendor harness schemas: `ctx7 docs` — see `docs/vendor/agent-harnesses/llms.tx
 | Skill | Source | When it triggers |
 |---|---|---|
 | `find-docs` | `ctx7 setup --cli --opencode` (Context7) | Any library/framework/SDK/cloud-service docs question |
+| `tool-policy` | House skill, `skills/tool-policy/` | Tool policy edits, hook debugging, harness verify |
 | `pioneer-api` | House skill, symlinked from `skills/pioneer-api/` (content copied from Pioneer's official `guides/agent-skills.md`) | Pioneer dataset/training/eval/inference work |
 | `inference-net` | House skill, symlinked from `skills/inference-net/` | Catalyst gateway/tracing, HALO, `inf` CLI work |
 
