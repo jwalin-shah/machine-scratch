@@ -37,6 +37,7 @@ printf '\n== Codex hooks schema ==\n'
 
 printf '\n== Cursor hooks + adapter ==\n'
 "$ROOT/bin/test-cursor-hooks.sh"
+"$ROOT/bin/test-antigravity-hooks.sh"
 
 printf '\n== all harness structural verify ==\n'
 VERIFY_ARGS=()

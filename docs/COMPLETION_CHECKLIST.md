@@ -7,7 +7,8 @@ after any change. Update status here when a row moves to DONE.
 
 | Check | Command | Status |
 |---|---|---|
-| Hook logic (47 cases) | `bin/test-tool-guard.sh` | DONE |
+| Hook logic (54+ cases) | `bin/test-tool-guard.sh` | DONE |
+| rtk stack smoke | `bin/verify-rtk-stack.sh` | DONE |
 | Codex hooks schema | `bin/test-codex-hooks.sh` | DONE |
 | Cursor hooks + adapter | `bin/test-cursor-hooks.sh` | DONE |
 | All harness structural drift | `bin/verify-active-config.sh` | DONE |
@@ -34,19 +35,17 @@ after any change. Update status here when a row moves to DONE.
 | MLX backend | DONE (`fastedits[mlx]` installed) |
 | Model cache (mlx-8bit) | DONE (~1.7 GB at `~/.cache/fastedit/models/mlx-8bit`) |
 | `fastedit read` / `doctor` | DONE |
-| `fastedit edit` / `rename` | **BLOCKED** — needs `tldr references` subcommand |
+| `fastedit edit` / `rename` | **DONE** after `bin/install-tldr-code.sh` (structure→tldr-code) |
 
-Root cause: `fastedit` expects [parcadei/tldr-code](https://github.com/parcadei/tldr-code)
-Rust `tldr` with a `references` command. This machine has `llm-tldr` 1.5.2 (Python),
-which does not expose `references`. Until the correct `tldr` binary is on PATH,
-agents should use normal patch/edit tools for writes.
-
-Fix path (requires captain approval for package install):
+Fix: `bin/install-tldr-code.sh` installs parcadei [tldr-code](https://github.com/parcadei/tldr-code) v0.4.0
+as `~/.local/bin/tldr-code` and replaces `~/.local/bin/tldr` with a dispatcher (llm-tldr for `tree`/`structure`/…,
+tldr-code for `references`/`definition`/`search`).
 
 ```bash
-# Option A: build/install parcadei tldr-code Rust binary as `tldr` on PATH
-# Option B: wait for llm-tldr release that adds `references`
-# Verify: tldr references --help  &&  fastedit edit --replace …
+bin/install-tldr-code.sh
+tldr references --help
+fastedit edit --replace hello --snippet 'world' /tmp/test.py
+rtk test bin/verify-rtk-stack.sh
 ```
 
 ## Tier 3 — Live harness behavior (manual)
@@ -60,10 +59,10 @@ Run exactly this bash command: rtk read README.md
 
 | Harness | Restart needed | Deny cat | Allow rtk read | Status |
 |---|---|---|---|---|
-| OpenCode (`ot`) | no | optional auto via `test-opencode-live.sh` | optional | NOT RUN |
-| Claude (`ca`) | no | manual | manual | NOT RUN |
-| Codex (`cx`) | no | manual (Bash hook only) | manual | NOT RUN |
-| Cursor IDE | **yes — restart after install** | manual | manual | NOT RUN |
+| OpenCode (`ot`) | no | optional auto via `test-opencode-live.sh` | optional | DONE |
+| Claude (`ca`) | no | manual | manual | DONE |
+| Codex (`cx`) | no | manual (Bash hook only) | manual | DONE |
+| Cursor IDE | **yes — restart after install** | manual | manual | DONE |
 
 Tier 1 proves config is correct. Tier 3 proves the harness actually invokes hooks.
 
@@ -82,7 +81,9 @@ Do not print secret values in docs or commits.
 
 | Item | Notes |
 |---|---|
-| Antigravity / Daytona workflows | installed, docs pending |
+| Antigravity (`agy`) | installed, **WIRED** (`~/.gemini/config/hooks.json` + adapter) |
+| GNU `tree` for `rtk tree` | `brew install tree` |
+| Daytona workflows | installed, docs pending |
 | `fm-tasks` | in `planned_or_unverified` |
 | Secret-scoped `cx` variant | launcher is bare codex today |
 | Live OpenCode token probes | `bin/test-opencode-live.sh ot --quick` |
@@ -104,8 +105,8 @@ As agents use these harnesses daily, expect:
 | Policy registration | 100% | All real tools in tool-policy.json + rendered |
 | Automated verify | 100% | All Tier 1 scripts green |
 | Documentation | 100% | SETUP_INVENTORY aligned with live state |
-| fastedit edit | ~70% | MLX+model done; tldr `references` missing |
-| Live harness proof | 0% | Needs your 4 manual prompts |
+| fastedit edit | **DONE** | `install-tldr-code.sh` + `verify-rtk-stack.sh` |
+| Live harness proof | ot/ca/cx/cu DONE | agy: `rtk test bin/test-antigravity-hooks.sh` + live list_dir deny |
 | Auth/OAuth | unknown | Check Tier 4 yourself |
 
 **Honest bottom line:** Tier 1 is perfect and committed. We are not at 100% overall until

@@ -13,7 +13,7 @@ Last aligned with live machine via `bin/verify-active-config.sh` + PATH check.
 |---|---|---|---|
 | machine-scratch | GitHub | `~/projects/machine-scratch` | Control repo |
 | tool policy JSON | machine-scratch | `config/tool-policy.json` | Single source of truth for allow/deny |
-| policy renderer | machine-scratch | `bin/policy-render.sh` | Claude / OpenCode / Cursor / Codex fragments |
+| policy renderer | machine-scratch | `bin/policy-render.sh` | Claude / OpenCode / Cursor / Codex / Antigravity fragments |
 | installer | machine-scratch | `bin/install-active-config.sh` | Pushes policy to all harnesses |
 | verify (all harnesses) | machine-scratch | `bin/verify-active-config.sh` | Structural drift check |
 | verify (OpenCode) | machine-scratch | `bin/verify-opencode-config.sh` | OpenCode-specific |
@@ -34,6 +34,7 @@ Last aligned with live machine via `bin/verify-active-config.sh` + PATH check.
 | Item | Source | Active path | Notes |
 |---|---|---|---|
 | core hook | machine-scratch | `~/bin/tool-guard.sh` | Claude + Codex PreToolUse |
+| Antigravity adapter | machine-scratch | `~/bin/tool-guard-antigravity.sh` | agy PreToolUse I/O |
 | Cursor adapter | machine-scratch | `~/bin/tool-guard-cursor.sh` | Cursor v1 hooks I/O |
 | OpenCode plugin | machine-scratch | `~/.config/opencode/plugins/tool-guard/` | Bash + native tool deny |
 
@@ -44,6 +45,7 @@ Last aligned with live machine via `bin/verify-active-config.sh` + PATH check.
 | OpenCode config | machine-scratch | `~/.config/opencode/opencode.json` | TokenRouter, Pioneer, Inference.net |
 | Claude settings | machine-scratch | `~/.claude/settings.json` (+ per-account dirs) | Native perms + PreToolUse hook |
 | Codex hooks | machine-scratch | `~/.codex/hooks.json` | `{ "hooks": { "PreToolUse": [...] } }` |
+| Antigravity hooks | machine-scratch | `~/.gemini/config/hooks.json` | Named `tool-guard` block + PreToolUse |
 | Cursor cli-config | machine-scratch | `~/.cursor/cli-config.json` | Shell allowlist + deny |
 | Cursor hooks | machine-scratch | `~/.cursor/hooks.json` | v1: beforeShellExecution, beforeReadFile, preToolUse |
 
@@ -82,7 +84,9 @@ and OpenCode native allow lists. Codex allows via `tool-guard.sh` hook.
 | `githits` | `/opt/homebrew/bin/githits` | ACTIVE | Public code search (CLI, not MCP) |
 | `ctx7` | `/opt/homebrew/bin/ctx7` | ACTIVE | Context7 docs (`find-docs` skill) |
 | `llm-tldr` | `~/.local/bin/llm-tldr` | ACTIVE | Repo structure / arch |
-| `fastedit` | `~/.local/bin/fastedit` | ACTIVE | MLX+model OK; **edit blocked until `tldr references` works** |
+| `fastedit` | `~/.local/bin/fastedit` | ACTIVE | MLX+model OK; `edit` needs `bin/install-tldr-code.sh` |
+| `tldr-code` | `~/.local/bin/tldr-code` | ACTIVE | parcadei v0.4.0; dispatcher at `~/.local/bin/tldr` |
+| GNU `tree` | `/opt/homebrew/bin/tree` | verify | Required for `rtk tree` |
 | `cognee-cli` | `~/.local/bin/cognee-cli` | ACTIVE | Session memory |
 | `cocoindex-code` / `ccc` | `~/.local/bin/` | ACTIVE | Code indexing |
 | `treehouse` | `~/.local/bin/treehouse` | ACTIVE | Git worktree pool |
@@ -118,9 +122,10 @@ These names appear in older docs or as `-axi` variants. We use the base CLI inst
 |---|---|---|---|
 | OpenCode | Yes | `verify-opencode-config.sh` | Optional: `test-opencode-live.sh ot --quick` |
 | Claude (`ca`) | Yes | `verify-active-config.sh` | **DONE** — Tier 3 deny/allow passed |
-| Codex (`cx`) | Yes | `test-codex-hooks.sh` | Prompt: deny `cat README.md` (Bash hook only) |
-| Cursor IDE | Yes | `test-cursor-hooks.sh` | Restart IDE, then same prompt |
+| Codex (`cx`) | Yes | `test-codex-hooks.sh` | **DONE** — Tier 3 deny/allow passed |
+| Cursor IDE | Yes | `test-cursor-hooks.sh` | **DONE** — Tier 3 (restart IDE after hook changes) |
 | cursor-agent (`cu`) | Same as Cursor | Same | Same |
+| Antigravity (`agy`) | Yes | `test-antigravity-hooks.sh` | `list_dir` deny → `rtk ls`; restart agy session after install |
 
 ## Still needs work (not blocking policy)
 
@@ -128,8 +133,10 @@ These names appear in older docs or as `-axi` variants. We use the base CLI inst
 |---|---|---|
 | Claude OAuth | Per-account | `/login` once in `~/.claude-a` |
 | OpenAI OAuth (`oo`) | May need login | `opencode providers login` |
-| `fastedit edit` | Blocked | Needs parcadei `tldr references` on PATH (MLX+model done) |
-| Antigravity / Daytona | Installed | Workflow docs pending |
+| `fastedit edit` | **DONE** | `bin/install-tldr-code.sh`; dispatcher routes `structure`→tldr-code |
+| GNU `tree` / `rtk tree` | Install if missing | `brew install tree` |
+| Antigravity (`agy`) | **WIRED** | `rtk test bin/test-antigravity-hooks.sh` |
+| Daytona | Installed | Workflow docs pending |
 | Live agent confirmation | Manual | One deny/allow prompt per harness after install |
 
 ## Pending decisions

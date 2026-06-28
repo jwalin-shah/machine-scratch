@@ -160,6 +160,14 @@ match_in_list() {
 #   5. default allow
 
 if hit="$(match_in_list '.bash_allow | keys[]' "$INNER")"; then
+  if [ "$FIRST" = "rtk" ]; then
+    read -r _ RTK_SUB _ <<< "$INNER"
+    if [ -n "$RTK_SUB" ] && jq -e --arg sub "$RTK_SUB" '.rtk_invalid_subcommands // [] | index($sub)' "$POLICY" >/dev/null; then
+      sug="$(redirect_for "$RTK_SUB")"
+      [ -z "$sug" ] && sug="rtk read"
+      emit_deny "\`rtk $RTK_SUB\` is not a valid rtk subcommand. Use \`$sug\` instead (rtk output is already condensed — no head/tail piping)."
+    fi
+  fi
   emit_allow
 fi
 

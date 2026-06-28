@@ -11,18 +11,14 @@
 - Claude/Codex hooks → `~/bin/tool-guard.sh`. Cursor hooks → `~/bin/tool-guard-cursor.sh`.
 - Per-account Claude OAuth requires `/login` in `~/.claude-a` once.
 
-## fastedit edit (tldr `references` missing)
+## fastedit edit (tldr-code `references`)
 
 MLX backend and mlx-8bit model are installed (`fastedit doctor` green for mlx + model).
-
-`fastedit read` / `doctor` work. `fastedit edit` / `rename` fail with
-`Symbol not found … Available: []` because fastedit calls `tldr references`, which
-**llm-tldr 1.5.2 does not provide**. fastedit expects the parcadei **tldr-code**
-Rust binary on PATH as `tldr`.
-
-Verify fix:
+`fastedit read` / `doctor` work. `edit` / `rename` call `tldr references`, which
+**llm-tldr 1.5.2 does not provide** — install parcadei **tldr-code** via:
 
 ```bash
+bin/install-tldr-code.sh   # ~/.local/bin/tldr-code + dispatcher at ~/.local/bin/tldr
 tldr references --help   # must succeed
 fastedit edit --replace hello --snippet '…' /tmp/test.py
 ```
@@ -83,3 +79,17 @@ Hooks use Cursor v1 schema (`beforeShellExecution`, `beforeReadFile`, `preToolUs
 Codex `PreToolUse` currently fires for **Bash only** — native Read/Grep are not hookable in
 Codex yet. Bash policy (`cat`, `rg`, `git`, …) is enforced via `~/.codex/hooks.json`.
 Schema: `{ "hooks": { "PreToolUse": [...] } }` (PascalCase, not `preToolUse`).
+
+
+## Antigravity (`agy`) hooks
+
+After `bin/install-active-config.sh`, Antigravity PreToolUse runs via named block `tool-guard` in
+`~/.gemini/config/hooks.json` and `~/bin/tool-guard-antigravity.sh` (maps `list_dir` / `read_file` /
+`run_command` to tool-guard). Verify with `rtk test bin/test-antigravity-hooks.sh`. Live: start an
+`agy` session with "please show structure" — `list_dir` should deny and steer to `rtk ls`.
+
+## rtk output — no head/tail piping
+
+`rtk read`/`grep`/etc. already return condensed output. Policy denies `head`, `tail`, `less`, and `more`
+and rejects invalid `rtk` subcommands (`rtk head`, `rtk cat`, …). Agents must use slice options on
+`rtk read` or re-run rtk with tighter scope — never pipe rtk through pagers.

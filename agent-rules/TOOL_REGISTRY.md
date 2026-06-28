@@ -16,7 +16,7 @@ Vendor harness schemas: `ctx7 docs` — see `docs/vendor/agent-harnesses/llms.tx
 |---|---|---|---|
 | `rtk` | ACTIVE | Token-optimized read/grep/ls/find/git/gh/diff/test | **Default for all file/git/github ops** |
 | `llm-tldr` | ACTIVE | Structure/arch/search on local code | Before opening many files |
-| `fastedit` | ACTIVE | AST-aware file edits | read/search OK; edit needs MLX model (see KNOWN_ISSUES) |
+| `fastedit` | ACTIVE | AST-aware file edits | `edit`/`rename` need `tldr references` (tldr-code dispatcher) |
 | `jq` / `yq` | ACTIVE | Structured data | Direct bash OK |
 | `du -s` / `du -sh` | ACTIVE | Parseable disk usage | Direct bash OK — not `dust` |
 | `gh-axi` | ACTIVE | Token-efficient GitHub CLI | Preferred over `rtk gh` for GitHub-heavy work |
@@ -64,7 +64,7 @@ Vendor harness schemas: `ctx7 docs` — see `docs/vendor/agent-harnesses/llms.tx
 rtk read path/to/file.py
 rtk grep 'pattern'
 rtk ls .
-rtk tree --level=2 .
+rtk tree -L 2 .   # needs: brew install tree
 rtk find -name '*.json'
 rtk git status
 rtk gh pr list
@@ -93,13 +93,16 @@ Always confirm before:
 | Blocked | Use instead |
 |---|---|
 | `cat`, native Read | `rtk read` |
-| `ls`, native List | `rtk ls` or `rtk tree` |
+| `ls`, native List | `rtk ls` (default); `rtk tree` when GNU `tree` installed |
 | `grep`, `rg`, native Grep | `rtk grep` |
 | `find`, `fd`, native Glob | `rtk find` |
 | `bat` | `rtk read` |
-| `eza` | `rtk ls` or `rtk tree` |
+| `eza` | `rtk ls`; `rtk tree` when GNU `tree` installed |
 | `dust`, bare `du` | `du -s` or `du -sh` |
 | `git`, `gh` | `rtk git …`, `rtk gh …` |
+
+| `head`, `tail`, `less`, `more` | rtk read (no piping on rtk output) |
+| `rtk head/tail/cat/less/more` | invalid — use `rtk read` |
 | `export` | `secret-cache exec -- <command>` |
 | `rm`, `sudo`, `security` | ask the captain |
 

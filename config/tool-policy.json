@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "description": "Source of truth for agent tool policy. OpenCode bash permissions in config/opencode/opencode.json must stay in sync with bash_allow, bash_deny, and bash_ask below.",
   "bash_allow": {
     "rtk": "All rtk subcommands (read, grep, ls, find, git, gh, diff, test, \u2026)",
@@ -61,6 +61,12 @@
       "gdu",
       "gsed",
       "gawk"
+    ],
+    "redundant_on_rtk_output": [
+      "head",
+      "tail",
+      "less",
+      "more"
     ]
   },
   "bash_ask": {
@@ -88,11 +94,11 @@
   ],
   "redirect": {
     "cat": "rtk read",
-    "ls": "rtk ls or rtk tree",
+    "ls": "rtk ls (default); rtk tree only when GNU tree is installed (brew install tree)",
     "grep": "rtk grep",
     "find": "rtk find",
     "rg": "rtk grep",
-    "eza": "rtk ls or rtk tree",
+    "eza": "rtk ls (default); rtk tree only when GNU tree is installed (brew install tree)",
     "fd": "rtk find",
     "bat": "rtk read",
     "dust": "du -s (parseable bytes, not human tree)",
@@ -104,12 +110,16 @@
     "pytest": "rtk test",
     "diff": "rtk diff",
     "gcat": "rtk read",
-    "gls": "rtk ls or rtk tree",
+    "gls": "rtk ls (default); rtk tree only when GNU tree is installed (brew install tree)",
     "ggrep": "rtk grep",
     "gfind": "rtk find",
     "gdu": "du -s or du -sh only",
     "gsed": "fastedit edit or jq/yq for structured data",
-    "gawk": "jq/yq for structured data or rtk grep for text"
+    "gawk": "jq/yq for structured data or rtk grep for text",
+    "head": "rtk read (rtk output is already condensed \u2014 do not pipe through head/tail)",
+    "tail": "rtk read (rtk output is already condensed \u2014 do not pipe through head/tail)",
+    "less": "rtk read",
+    "more": "rtk read"
   },
   "skills_installed": {
     "find-docs": "Context7 (~/.agents/skills/find-docs)",
@@ -125,5 +135,12 @@
     "source_of_truth": "Infisical",
     "runtime_injection": "secret-cache exec -- <command>",
     "never_global_export": true
-  }
+  },
+  "rtk_invalid_subcommands": [
+    "head",
+    "tail",
+    "less",
+    "more",
+    "cat"
+  ]
 }

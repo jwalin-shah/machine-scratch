@@ -8,7 +8,7 @@ Source of truth: `~/projects/machine-scratch/agent-rules/`.
 ## Section 1: Tool Hierarchy — use in order, stop when sufficient
 
 1. **Structure first.** If `llm-tldr` is installed, use `llm-tldr structure <repo>` before opening more than 2 files in an unfamiliar repo. If not installed, use `rtk find`, `rtk grep`, and targeted `rtk read` slices.
-2. **File ops** — use **`rtk`** subcommands first: `rtk read`, `rtk grep`, `rtk ls`, `rtk find`, `rtk git`, `rtk gh`, `rtk diff`, `rtk test`. Do **not** call raw `rg`, `eza`, `fd`, `bat`, `git`, or `gh` in bash — policy denies them. Use `du -s` for disk usage (not `dust`, which is human-oriented). Use `jq` / `yq` for structured data mutation, and `rtk json/read` for displaying JSON to the agent. Use `gtimeout`/`timeout` only to bound live smoke tests. See TOOL_REGISTRY.md.
+2. **File ops** — use **`rtk`** only (never propose raw `ls`, `cat`, `grep`, `find`, `git`, or `gh` in bash). Subcommands: `rtk read`, `rtk grep`, `rtk ls`, `rtk find`, `rtk git`, `rtk gh`, `rtk diff`, `rtk test`, `rtk tree` (requires GNU `tree` installed). rtk output is already condensed — **do not** pipe through `head`/`tail`/`less`/`more` (denied). Use `du -s` for disk usage (not `dust`, which is human-oriented). Use `jq` / `yq` for structured data mutation, and `rtk json/read` for displaying JSON to the agent. Use `gtimeout`/`timeout` only to bound live smoke tests. See TOOL_REGISTRY.md.
 3. **GitHub** — use `gh-axi` if installed; otherwise `gh` with compact JSON and narrow queries.
 4. **Public code examples** — use `githits` (CLI) for indexed open-source search.
 5. **Raw exact output** — `git` for local ops, `jq`, `yq`, small command outputs.
@@ -129,7 +129,9 @@ Read `~/.agent-rules/KNOWN_ISSUES.md` before any bash-heavy session.
 
 **Policy: no MCP servers.** Context7, GitHits, and Inference.net all have CLI/skills modes — we use those, not their MCP variants.
 
-**Partial / caveat:** `fastedit` — MLX+model installed; `edit` blocked until parcadei `tldr references` is on PATH (see KNOWN_ISSUES.md).
+**fastedit:** MLX+model installed; run `bin/install-tldr-code.sh` (dispatcher: `structure`/`references`→tldr-code, `tree`/…→llm-tldr). Verify with `tldr references --help` and `fastedit edit`.
+
+**Antigravity (`agy`):** **WIRED** via `~/.gemini/config/hooks.json` + `tool-guard-antigravity.sh`. Restart agy after install; verify with `rtk test bin/test-antigravity-hooks.sh`.
 
 **Not installed:** `fm-tasks`.
 

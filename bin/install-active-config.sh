@@ -146,6 +146,17 @@ if ! jq -e '.hooks.PreToolUse | length > 0' "$HOME/.codex/hooks.json" >/dev/null
 fi
 
 
+
+# ---------- Antigravity / agy (~/.gemini/config/hooks.json) ----------
+mkdir -p "$HOME/.gemini/config"
+ln -sf "$ROOT/bin/tool-guard-antigravity.sh" "$HOME/bin/tool-guard-antigravity.sh"
+antigravity_hooks="$(jq -c '.antigravity_hooks_json' "$POLICY_OUT")"
+merge_json "$HOME/.gemini/config/hooks.json" "$antigravity_hooks"
+if ! jq -e '."tool-guard".enabled == true and (."tool-guard".PreToolUse | length > 0)' "$HOME/.gemini/config/hooks.json" >/dev/null; then
+  echo "install-active-config: invalid Antigravity hooks.json (expected .tool-guard.PreToolUse)" >&2
+  exit 1
+fi
+
 # ---------- agent skills (~/.agents/skills/) ----------
 mkdir -p "$HOME/.agents/skills"
 for skill in pioneer-api inference-net tool-policy; do
@@ -160,4 +171,4 @@ launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.jwalinshah.se
 
 echo "active config installed from $ROOT"
 echo "  policy version: $(jq -r .version "$ROOT/config/tool-policy.json")"
-echo "  harnesses:      claude, opencode, cursor, codex"
+echo "  harnesses:      claude, opencode, cursor, codex, antigravity (agy)"

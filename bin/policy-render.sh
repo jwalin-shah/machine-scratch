@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # policy-render.sh — render config/tool-policy.json into per-harness native
 # permission blocks. Output is a JSON object whose keys are harness names
-# ("claude", "opencode", "cursor", "codex") and whose values are JSON
+# ("claude", "opencode", "cursor", "codex", "antigravity") and whose values are JSON
 # fragments the installer merges into each live config file.
 #
 # Architecture: this is the SOLE place that knows how each harness expresses
@@ -19,7 +19,8 @@
 #     "claude":   { "permissions": { "allow": [...], "deny": [...], "ask": [...] } },
 #     "opencode": { "permission":  { "bash": {...}, "read": "deny", ... } },
 #     "cursor":   { "permissions": { "allow": [...], "deny": [...] } },
-#     "codex":    { "hooks_json":  { ... } }    # codex native unverified, hook only
+#     "codex":        { "hooks_json":  { ... } }    # codex native unverified, hook only
+#     "antigravity":  { "antigravity_hooks_json": { "tool-guard": { ... } } }
 #   }
 
 set -euo pipefail
@@ -137,6 +138,35 @@ render_cursor_hooks() {
     }'
 }
 
+
+# ---------- render_antigravity ----------
+# Antigravity (agy) ~/.gemini/config/hooks.json — named top-level blocks.
+# PreToolUse stdin: { toolCall: { name, args }, ... }
+# stdout: {"decision":"allow"} | {"decision":"deny","reason":"..."}
+render_antigravity() {
+  local guard="${TOOL_GUARD_ANTIGRAVITY_PATH:-$HOME/bin/tool-guard-antigravity.sh}"
+  jq -n --arg g "$guard" '
+    {
+      antigravity_hooks_json: {
+        "tool-guard": {
+          enabled: true,
+          PreToolUse: [
+            {
+              matcher: ".*",
+              hooks: [
+                {
+                  type: "command",
+                  command: $g,
+                  timeout: 5
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }'
+}
+
 # ---------- render_codex ----------
 # Codex hooks.json schema (v0.114+): top-level "hooks" object with PascalCase
 # event keys. See https://developers.openai.com/codex/hooks
@@ -172,6 +202,7 @@ case "${1:-all}" in
   cursor-hooks) render_cursor_hooks | jq -c '.cursor_hooks_json' ;;
   opencode) render_opencode ;;
   codex)    render_codex ;;
+  antigravity) render_antigravity ;;
   cursor-hooks) render_cursor_hooks | jq -c '.cursor_hooks_json' ;;
   all)
     jq -n \
@@ -179,17 +210,19 @@ case "${1:-all}" in
       --argjson cursor   "$(render_cursor)" \
       --argjson opencode "$(render_opencode)" \
       --argjson codex    "$(render_codex)" \
-      --argjson cursor_hooks "$(render_cursor_hooks | jq -c '.cursor_hooks_json')" '
+      --argjson cursor_hooks "$(render_cursor_hooks | jq -c '.cursor_hooks_json')" \
+      --argjson antigravity_hooks "$(render_antigravity | jq -c '.antigravity_hooks_json')" '
       {
         claude:   $claude,
         cursor:   $cursor,
         opencode: $opencode,
         codex:    $codex,
-        cursor_hooks_json: $cursor_hooks
+        cursor_hooks_json: $cursor_hooks,
+        antigravity_hooks_json: $antigravity_hooks
       }'
     ;;
   *)
-    echo "Usage: policy-render.sh [claude|cursor|cursor-hooks|opencode|codex|all]" >&2
+    echo "Usage: policy-render.sh [claude|cursor|cursor-hooks|opencode|codex|antigravity|all]" >&2
     exit 2
     ;;
 esac

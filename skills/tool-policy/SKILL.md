@@ -31,11 +31,18 @@ Index of library IDs: `docs/vendor/agent-harnesses/llms.txt`
 
 ## Common tasks
 
+### Agent vocabulary
+
+- File/git ops: **rtk only** — never suggest raw `ls`, `cat`, `grep`, `find`, `git`, `gh`.
+- No `head`/`tail`/`less`/`more` on rtk output; invalid `rtk` subcommands are denied in `tool-guard.sh`.
+- `rtk tree` requires GNU `tree` (`brew install tree`).
+
 ### Verify policy after edits
 
 ```bash
 bin/install-active-config.sh
 rtk test bin/test-all-policy.sh
+rtk test bin/verify-rtk-stack.sh
 ```
 
 Restart Cursor IDE after hook changes.
@@ -46,13 +53,14 @@ Restart Cursor IDE after hook changes.
 rtk test bin/test-tool-guard.sh
 echo '{"tool_name":"Bash","tool_input":{"command":"cat foo"}}' | bin/tool-guard.sh
 echo '{"command":"cat foo"}' | bin/tool-guard-cursor.sh
+echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"cat foo"}}}' | bin/tool-guard-antigravity.sh
 ```
 
 ### Add a new allowed bash command
 
 1. Add to `config/tool-policy.json` → `bash_allow`
 2. `bin/install-active-config.sh`
-3. `rtk test bin/test-all-policy.sh`
+3. `rtk test bin/test-all-policy.sh` and `rtk test bin/verify-rtk-stack.sh`
 
 Never hand-edit `~/.claude/settings.json` permission arrays or `~/.cursor/cli-config.json`.
 
@@ -64,6 +72,13 @@ Never hand-edit `~/.claude/settings.json` permission arrays or `~/.cursor/cli-co
 | Codex | `~/.codex/hooks.json` | `~/bin/tool-guard.sh` |
 | Cursor | `~/.cursor/hooks.json` + `cli-config.json` | `~/bin/tool-guard-cursor.sh` |
 | OpenCode | `~/.config/opencode/opencode.json` + plugin | `plugins/tool-guard/index.js` |
+| Antigravity (`agy`) | `~/.gemini/config/hooks.json` | `~/bin/tool-guard-antigravity.sh` |
 
 Codex: PreToolUse matches Bash only (upstream limitation).
 Cursor: restart IDE after install; uses v1 hooks schema.
+
+### Antigravity (`agy`)
+
+Wired via named `tool-guard` block in `~/.gemini/config/hooks.json`. Adapter maps `run_command` → Shell,
+`list_dir` / `read_file` / `view_file` / `find_by_name` → List/Read/Glob denies. Verify:
+`rtk test bin/test-antigravity-hooks.sh`. Live: `agy` + "please show structure" should deny `list_dir` and suggest `rtk ls`.
