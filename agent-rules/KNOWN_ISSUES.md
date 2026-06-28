@@ -11,17 +11,24 @@
 - Claude/Codex hooks → `~/bin/tool-guard.sh`. Cursor hooks → `~/bin/tool-guard-cursor.sh`.
 - Per-account Claude OAuth requires `/login` in each of `~/.claude-a`, `~/.claude-b` once.
 
-## fastedit edit (MLX not installed)
+## fastedit edit (tldr `references` missing)
 
-`fastedit read` / `search` / `doctor` work. `fastedit edit` needs:
+MLX backend and mlx-8bit model are installed (`fastedit doctor` green for mlx + model).
+
+`fastedit read` / `doctor` work. `fastedit edit` / `rename` fail with
+`Symbol not found … Available: []` because fastedit calls `tldr references`, which
+**llm-tldr 1.5.2 does not provide**. fastedit expects the parcadei **tldr-code**
+Rust binary on PATH as `tldr`.
+
+Verify fix:
 
 ```bash
-uv tool install "fastedits[mlx]" --force
-fastedit pull --model mlx-8bit
-mkdir -p ~/.fastedit/backups
+tldr references --help   # must succeed
+fastedit edit --replace hello --snippet '…' /tmp/test.py
 ```
 
-Until then, agents should use normal patch/edit tools for writes.
+Until `references` works, agents should use normal patch/edit tools for writes.
+See `docs/COMPLETION_CHECKLIST.md`.
 
 ## Missing / Planned Tools
 

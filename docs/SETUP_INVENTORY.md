@@ -83,7 +83,7 @@ and OpenCode native allow lists. Codex allows via `tool-guard.sh` hook.
 | `githits` | `/opt/homebrew/bin/githits` | ACTIVE | Public code search (CLI, not MCP) |
 | `ctx7` | `/opt/homebrew/bin/ctx7` | ACTIVE | Context7 docs (`find-docs` skill) |
 | `llm-tldr` | `~/.local/bin/llm-tldr` | ACTIVE | Repo structure / arch |
-| `fastedit` | `~/.local/bin/fastedit` | ACTIVE | read/search OK; **edit needs MLX + model** |
+| `fastedit` | `~/.local/bin/fastedit` | ACTIVE | MLX+model OK; **edit blocked until `tldr references` works** |
 | `cognee-cli` | `~/.local/bin/cognee-cli` | ACTIVE | Session memory |
 | `cocoindex-code` / `ccc` | `~/.local/bin/` | ACTIVE | Code indexing |
 | `treehouse` | `~/.local/bin/treehouse` | ACTIVE | Git worktree pool |

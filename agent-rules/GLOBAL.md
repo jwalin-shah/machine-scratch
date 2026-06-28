@@ -130,7 +130,7 @@ Read `~/.agent-rules/KNOWN_ISSUES.md` before any bash-heavy session.
 
 **Policy: no MCP servers.** Context7, GitHits, and Inference.net all have CLI/skills modes — we use those, not their MCP variants.
 
-**Partial / caveat:** `fastedit` — read/search work; `fastedit edit` needs MLX backend + pulled model (see KNOWN_ISSUES.md).
+**Partial / caveat:** `fastedit` — MLX+model installed; `edit` blocked until parcadei `tldr references` is on PATH (see KNOWN_ISSUES.md).
 
 **Not installed:** `fm-tasks`.
 

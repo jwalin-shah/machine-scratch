@@ -62,6 +62,8 @@ rtk test bin/test-opencode-live.sh ot --quick  # Tier 3: live tokens
 
 After install: **restart Cursor IDE** so `~/.cursor/hooks.json` reloads.
 
+Full done/not-done matrix: **`docs/COMPLETION_CHECKLIST.md`**.
+
 ### Tier 1 breakdown
 
 | Script | Proves |
