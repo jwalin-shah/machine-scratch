@@ -155,3 +155,16 @@ rtk test bin/test-tool-guard.sh
 `python3 -c "..."`. Should be denied in tool policy (add `bun -e` patterns to deny list).
 Allowed because `bun *` matches any bun invocation. Fix: add explicit deny for `bun -e *`.
 
+
+## tee as file-write bypass (not denied)
+
+`tee` is not in the bash deny list. When `echo`, `cat`, `printf`, `python3`, and heredoc
+`cat << EOF` are all denied for writing files, `tee << 'EOF' > /dev/null` works.
+
+This is a tool-policy gap: `tee` can write arbitrary file content via heredoc/stdin
+without being caught by any deny rule. Unlike `bun -e` (which is at least an allow-tier
+tool), `tee` is a standard Unix utility with no explicit allow or deny.
+
+Current policy does not classify `tee` as a "file write" tool the way it does
+`python3 -c "..."` or `bun -e`. If file-write bypass via script interpreters matters,
+add `tee` to the deny list alongside `python3`, `bun -e`, and `echo`/`printf`.

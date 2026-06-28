@@ -85,7 +85,7 @@ and OpenCode native allow lists. Codex allows via `tool-guard.sh` hook.
 | `githits` | `/opt/homebrew/bin/githits` | ACTIVE | Public code search (CLI, not MCP) |
 | `ctx7` | `/opt/homebrew/bin/ctx7` | ACTIVE | Context7 docs (`find-docs` skill) |
 | `llm-tldr` | `~/.local/bin/llm-tldr` | ACTIVE | Repo structure / arch |
-| `fastedit` | `~/.local/bin/fastedit` | ACTIVE | MLX+model OK; `edit` needs `bin/install-tldr-code.sh` |
+| `fastedit` | `~/.local/bin/fastedit` | ACTIVE | MLX+model OK; forked to jwalin-shah/fastedit (+ `create` subcommand)
 | `tldr-code` | `~/.local/bin/tldr-code` | ACTIVE | parcadei v0.4.0; dispatcher at `~/.local/bin/tldr` |
 | GNU `tree` | `/opt/homebrew/bin/tree` | verify | Required for `rtk tree` |
 | `cognee-cli` | `~/.local/bin/cognee-cli` | ACTIVE | Session memory |
@@ -144,6 +144,7 @@ These names appear in older docs or as `-axi` variants. We use the base CLI inst
 | Claude OAuth | Per-account | `/login` once in `~/.claude-a` |
 | OpenAI OAuth (`oo`) | May need login | `opencode providers login` |
 | `fastedit edit` | **DONE** | `bin/install-tldr-code.sh`; dispatcher routes `structure`→tldr-code |
+| fastedit `create` | **DONE** | Forked parcadei/fastedit to jwalin-shah/fastedit; added `create` subcommand with language-aware boilerplate for 16 code + 15 non-code file types (2026-06-27)
 | GNU `tree` / `rtk tree` | Install if missing | `brew install tree` |
 | Antigravity (`agy`) | **WIRED** | `rtk test bin/test-antigravity-hooks.sh` |
 | Daytona | Installed | Workflow docs pending |

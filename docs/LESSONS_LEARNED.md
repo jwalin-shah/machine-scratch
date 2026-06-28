@@ -126,3 +126,151 @@ When changing which keys appear in the rendered permission config:
 3. Update verify scripts to use the same merge strategy as the installer.
 4. Run `verify-opencode-config.sh` (62 checks) and `test-all-policy.sh` after
    every policy render change.
+---
+
+## 2026-06-27: Cognee + local MLX LLM — adapter stack impedance mismatch
+
+### The problem
+Cognee's `remember` pipeline goes through LiteLLM → Instructor → provider adapter →
+OpenAI client. MLX server works via curl but cognee's stack blocks it:
+- OpenAI client validates API key format
+- LiteLLM expects provider-prefixed model names
+- Instructor retries forever on truncated structured output
+
+### What worked
+`LLM_PROVIDER=llama_cpp` bypasses LiteLLM, uses `AsyncOpenAI` directly.
+Connects to MLX, extracts entities — but `max_tokens` too low for cognee's
+structured output schema, causing infinite Instructor retries.
+
+### Key lesson
+Cognee env vars override stored config. Always pass PROVIDER/ENDPOINT/MODEL/KEY
+as env vars. Don't fight the adapter stack — use Ollama for zero-friction.
+See LLM_PROVIDER=ollama with llama3.1:8b in official docs.
+---
+
+## 2026-06-27: fastedit `--replace` matches symbol names only, not full text
+
+### The bug
+
+`fastedit edit --replace <symbol> --snippet <new>` matches on parsed **symbol names**
+from the file (variable names, function names), NOT on the full text you provide.
+Passing `--replace 'export FOO=bar'` will fail with "Symbol not found" because
+fastedit doesn't search for the text — it searches for the symbol name `FOO`.
+
+It works via AST-aware parsing: it extracts all identifiers/symbols, then replaces
+their declaration. The `--replace` argument must be a single symbol token that
+exists in the file's parsed symbol table (listed in the "Available" error message).
+
+### Why it was missed
+
+The `--replace` flag name implies text replacement. Nothing in the name or short
+help suggests AST-level matching. The error message ("Symbol '...' not found") is
+the only clue, and it only shows up after a failed attempt.
+
+### The fix
+
+Use `--replace <SymbolName>` where `<SymbolName>` is just the bare variable
+or function name (e.g., `LLM_PROVIDER` not `export LLM_PROVIDER=llama_cpp`).
+The snippet should contain the full declaration including `export`, value, etc.
+
+For bulk rewrites where you need to replace full lines or blocks, use `tee`
+with a heredoc instead — it's simpler and doesn't have AST constraints.
+
+### Rule for future fastedit use
+
+1. `--replace` takes a **symbol token** (bare name), not text to find.
+2. When rewriting a whole file or block, use `tee << 'EOF'` instead.
+3. When only editing a single variable declaration, `--replace` works but
+   pass only the variable name.
+
+---
+
+## 2026-06-28: Cognee llama_cpp adapter — max_tokens not passed to API
+
+### The bug
+
+Cognee's `LlamaCppAPIAdapter` (llama_cpp/adapter.py) stores `self.max_completion_tokens`
+in `__init__` (default 2048, overridden by `LLM_MAX_COMPLETION_TOKENS` env var, default 16384)
+but **never passes it to the API call** in `acreate_structured_output`. The API call uses
+`**merged_kwargs` which comes from `self.llm_args` and inline kwargs, but `self.max_completion_tokens`
+is not included.
+
+The MLX server (and most OpenAI-compatible servers) defaults `max_tokens` to 512 or 2048
+when not specified. Cognee's Instructor layer then retries (doubling tokens each time to
+1024, 2048...) but the model wastes tokens echoing the JSON schema ($defs/Node/Edge) in
+its output, so even 2048 is often not enough.
+
+### Why it was missed
+
+The OpenAI adapter (`openai/adapter.py`) correctly passes `max_completion_tokens=max_completion_tokens`
+in its API call. The llama_cpp adapter was written later and omitted this parameter.
+Without end-to-end testing against a real server with large schemas, it looked correct
+(the variable existed, the test passed initialization).
+
+### The fix
+
+Pass `max_tokens` via `LLM_ARGS` env var, which gets merged into the API call kwargs
+via `**merged_kwargs`:
+
+```bash
+export LLM_ARGS='{"max_tokens": 16384}'
+```
+
+This works because `merged_kwargs = {**self.llm_args, **kwargs}` and `self.llm_args`
+comes from `LLMConfig.llm_args`, which pydantic-settings parses from the `LLM_ARGS` env var.
+
+### Rule for future cognee adapter debugging
+
+1. If Instructor retries forever with "max_tokens length limit" errors from a local server,
+   the adapter likely isn't passing `max_tokens` to the API.
+2. Check whether `self.max_completion_tokens` is actually used in the adapter's
+   `acreate_structured_output` method — it might be set but never referenced.
+3. Workaround: use `LLM_ARGS='{"max_tokens": 16384}'` to push the value via kwargs.
+4. The model echoing the full JSON schema in output is a separate model-behavior issue —
+   `instructor.Mode.JSON` mode causes this with smaller models.
+
+---
+
+## 2026-06-28: Cognee Instructor mode — 8B model needs markdown_json_mode
+
+### The problem
+
+Cognee's llama_cpp adapter defaults to `instructor.Mode.JSON` (`json_mode`), which
+expects pure JSON output. The MLX-hosted Llama 3.1 8B model wraps JSON responses
+in markdown code blocks:
+
+````
+```json
+{"content": "..."}
+```
+````
+
+Instructor's `json_mode` can't parse this — it sees trailing characters (the closing
+```` ``` ````) and raises `Invalid JSON: trailing characters at line 15 column 1`.
+It retries forever because the model is consistent in its code-block-wrapping behavior.
+
+### Why it was missed
+
+Larger models (GPT-4, Claude 3) reliably output raw JSON without code fences.
+The 8B model was never tested with cognee's Instructor pipeline. The mode setting
+was left at the adapter default (`JSON`), which works for large commercial models
+but not for smaller local ones.
+
+### The fix
+
+Set `LLM_INSTRUCTOR_MODE=markdown_json_mode` (not `md_json` — that's an invalid value).
+
+Valid Instructor modes for local models (from `instructor.Mode` enum):
+- `json_mode` — raw JSON only (default, fails with 8B models)
+- `markdown_json_mode` — extracts JSON from ` ```json...``` ` blocks (works)
+- `json_schema_mode` — JSON schema constrained (also works but schema-heavy)
+
+### Rule for future local LLM + Instructor debugging
+
+1. If Instructor fails with JSON parse errors and the model output contains markdown
+   code blocks, switch to `markdown_json_mode`.
+2. Valid mode strings are from `instructor.Mode` enum values. Check with:
+   `python3 -c "import instructor; print([m.value for m in instructor.Mode])"`
+3. Setting is via `LLM_INSTRUCTOR_MODE` env var (picked up by `LLMConfig`).
+4. This applies to all smaller local models (8B and below) that tend to
+   code-fence their JSON output.
