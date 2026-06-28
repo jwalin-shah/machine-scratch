@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "description": "Source of truth for agent tool policy. OpenCode bash permissions in config/opencode/opencode.json must stay in sync with bash_allow, bash_deny, and bash_ask below.",
   "bash_allow": {
     "rtk": "All rtk subcommands (read, grep, ls, find, git, gh, diff, test, …)",
@@ -71,6 +71,10 @@
     "script_interpreters": [
       "python3",
       "python"
+    ],
+    "shell_output_bypass": [
+      "echo",
+      "printf"
     ]
   },
   "bash_ask": {
@@ -128,7 +132,9 @@
     "python": "fastedit edit (or uv for package ops — not for file writes)",
     "write": "fastedit edit via Shell",
     "strreplace": "fastedit edit via Shell",
-    "delete": "ask captain"
+    "delete": "ask captain",
+    "echo": "jq -n for JSON; rtk test for hook smoke — do not pipe echo to tools",
+    "printf": "jq -n for JSON; rtk test for hook smoke — do not pipe echo to tools"
   },
   "skills_installed": {
     "find-docs": "Context7 (~/.agents/skills/find-docs)",
