@@ -1,3 +1,9 @@
+const PIPE_DENY_RE = /\|\s*(head|tail|less|more)\b/i;
+
+function stripDeniedPipe(command) {
+  return command.replace(/\s*\|\s*(head|tail|less|more)\b.*/i, "").trim();
+}
+
 const DENY_MAP = {
   cat: { suggestion: "rtk read" },
   ls: { suggestion: "rtk ls or rtk tree" },
@@ -28,6 +34,17 @@ export default async () => ({
   "permission.ask": async (input, output) => {
     if (input.type === "bash") {
       const pattern = input.pattern || "";
+      const pipeMatch = pattern.match(PIPE_DENY_RE);
+      if (pipeMatch) {
+        const pipeCmd = pipeMatch[1].toLowerCase();
+        const stripped = stripDeniedPipe(pattern);
+        output.status = "deny";
+        input.metadata = {
+          ...input.metadata,
+          toolGuardReason: `Do not pipe through ${pipeCmd}. Re-run without the pipe: ${stripped}`,
+        };
+        return;
+      }
       const cmd = pattern.trim().split(/\s+/)[0]?.toLowerCase();
       const rule = DENY_MAP[cmd];
       if (!rule) return;

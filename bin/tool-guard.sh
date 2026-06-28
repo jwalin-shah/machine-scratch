@@ -216,6 +216,15 @@ if hit="$(match_in_list '[.bash_deny[][]] | .[]' "$INNER")"; then
   fi
 fi
 
+# Pipelines: deny | head/tail/less/more anywhere (first-token check misses
+# e.g. `pmset -g | head -30`). Do not auto-run the stripped command — it may
+# be ask-tier and still needs harness approval.
+if [[ "$INNER" =~ \|[[:space:]]*(head|tail|less|more)([[:space:]]|$|\|) ]]; then
+  pipe_cmd="${BASH_REMATCH[1]}"
+  stripped="$(printf '%s' "$INNER" | sed -E 's/[[:space:]]*\|[[:space:]]*(head|tail|less|more)(\ [^|]*)?.*$//')"
+  emit_deny "Do not pipe through \`$pipe_cmd\` (head/tail/less/more are denied). Re-run without the pipe: \`$stripped\`"
+fi
+
 # OpenCode's "*": "ask" has no Claude analogue (no ask UI). Anything not
 # enumerated falls through to allow — matches the "only gate known-risky" intent.
 emit_allow

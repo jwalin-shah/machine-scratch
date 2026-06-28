@@ -99,3 +99,55 @@ After `bin/install-active-config.sh`, Antigravity PreToolUse runs via named bloc
 `rtk read`/`grep`/etc. already return condensed output. Policy denies `head`, `tail`, `less`, and `more`
 and rejects invalid `rtk` subcommands (`rtk head`, `rtk cat`, …). Agents must use slice options on
 `rtk read` or re-run rtk with tighter scope — never pipe rtk through pagers.
+
+
+## Pipeline pager deny (WIP — 2026-06-27)
+
+Partial fix shipped: `bin/tool-guard.sh` and `config/opencode/plugins/tool-guard/index.js`
+deny pipeline pagers (`| head/tail/less/more`) with redirect:
+`Re-run without the pipe: <stripped command>`. Do **not** auto-run the stripped command
+(ask-tier commands like `pmset` still need harness approval).
+
+### What works today
+
+- `pmset -g | head -30` → deny + strip hint
+- Multi-pipe, subshells, redirects before pipe, `secret-cache exec --` wrapper
+- OpenCode plugin catches allowed-first-token + pager (pipe check before first-token logic)
+
+### Known gaps (fix later)
+
+1. **Allow-tier bypass in tool-guard.sh** — pipeline check runs *after* `bash_allow` emit_allow.
+   `rtk read x | head` and `jq . f | head` **ALLOW** on Cursor/Claude/Codex/Agy.
+   OpenCode plugin does not have this bug. Fix: run pipeline check before every `emit_allow`.
+
+2. **Bypass variants not matched** — ALLOW: `| /usr/bin/head`, `| command head`,
+   `| HEAD` (case-sensitive), `| ghead`. Extend regex or normalize before match.
+
+3. **Truncator pivot** — agents may use `| sed -n`, `| awk NR<=`, `| cut` instead.
+
+4. **OpenCode allow-tier + plugin (unverified live)** — unit test denies rtk+pager; TUI may differ.
+
+5. **Meta** — guarded Shell blocks command strings containing pipeline pagers (incl. test code).
+
+6. **Permission flow instructions** — GLOBAL.md lacks ask-vs-deny-vs-chat guidance.
+
+### Test matrix
+
+```bash
+rtk test bin/test-tool-guard-pipes.sh   # 16 cases; 13 pass / 3 fail (2026-06-27)
+rtk test bin/test-tool-guard.sh
+```
+
+Drive fixes from failures: rtk+pager and jq+pager (allow-tier bypass).
+
+After edits: `bin/install-active-config.sh`
+
+### Later checklist
+
+- [ ] Pipeline check before all `emit_allow` in tool-guard.sh
+- [ ] Regex: absolute path, command wrapper, case-insensitive, ghead
+- [ ] Plugin pipe cases in test-opencode-permissions.sh
+- [ ] Wire test-tool-guard-pipes.sh into test-all-policy.sh
+- [ ] Live TUI smoke
+- [ ] GLOBAL.md permission-flow section
+- [ ] Optional: pmset/system_profiler in bash_allow
