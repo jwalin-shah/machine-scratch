@@ -41,7 +41,7 @@ elif printf '%s' "$INPUT" | jq -e '.tool_name // .tool // empty' | grep -qv '^$'
       cmd="$(printf '%s' "$INPUT" | jq -r '.tool_input.command // .command // ""')"
       PAYLOAD="$(jq -n --arg c "$cmd" '{tool_name: "Shell", tool_input: {command: $c}}')"
       ;;
-    Read|Grep|Glob|List)
+    Read|Grep|Glob|List|Write|StrReplace|Delete|Edit)
       PAYLOAD="$(printf '%s' "$INPUT" | jq '{tool_name: (.tool_name // .tool), tool_input: (.tool_input // {})}')"
       ;;
     *)

@@ -68,6 +68,12 @@ echo "== Cursor adapter: preToolUse Shell =="
 expect_cursor_deny "Shell cat" "rtk read" '{"tool_name":"Shell","tool_input":{"command":"cat foo"}}'
 expect_cursor_allow "Shell rtk" '{"tool_name":"Shell","tool_input":{"command":"rtk ls ."}}'
 
+echo "== Cursor adapter: preToolUse Write =="
+expect_cursor_deny "preToolUse Write" "native_write_deny" '{"tool_name":"Write","tool_input":{"path":"x"}}'
+
+echo "== Cursor adapter: preToolUse Shell python3 =="
+expect_cursor_deny "Shell python3" "fastedit edit" '{"tool_name":"Shell","tool_input":{"command":"python3 -c \"print(1)\""}}'
+
 echo
 echo "Passed: $pass   Failed: $fail"
 [ "$fail" -eq 0 ]

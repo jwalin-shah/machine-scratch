@@ -1,9 +1,9 @@
 {
-  "version": 7,
+  "version": 8,
   "description": "Source of truth for agent tool policy. OpenCode bash permissions in config/opencode/opencode.json must stay in sync with bash_allow, bash_deny, and bash_ask below.",
   "bash_allow": {
-    "rtk": "All rtk subcommands (read, grep, ls, find, git, gh, diff, test, \u2026)",
-    "du -s": "Parseable disk usage only \u2014 not human-oriented dust",
+    "rtk": "All rtk subcommands (read, grep, ls, find, git, gh, diff, test, …)",
+    "du -s": "Parseable disk usage only — not human-oriented dust",
     "du -sh": "Parseable disk usage with human suffix",
     "jq": "JSON parsing",
     "yq": "YAML parsing",
@@ -19,8 +19,8 @@
     "ccc": "cocoindex-code short alias",
     "treehouse": "Pool of reusable git worktrees (kunchenguid)",
     "githits": "Indexed search/grep/read across open-source code (CLI, no MCP)",
-    "inf": "Inference.net (Catalyst) CLI \u2014 gateway, traces, evals, datasets, training",
-    "pioneer": "Pioneer (Fastino) CLI \u2014 datasets, training, evals, inference",
+    "inf": "Inference.net (Catalyst) CLI — gateway, traces, evals, datasets, training",
+    "pioneer": "Pioneer (Fastino) CLI — datasets, training, evals, inference",
     "bun": "Required runtime for the Pioneer CLI",
     "gtimeout": "Bound live agent smoke tests on macOS (GNU coreutils timeout)",
     "timeout": "Bound live agent smoke tests where GNU timeout is available",
@@ -67,6 +67,10 @@
       "tail",
       "less",
       "more"
+    ],
+    "script_interpreters": [
+      "python3",
+      "python"
     ]
   },
   "bash_ask": {
@@ -103,8 +107,8 @@
     "bat": "rtk read",
     "dust": "du -s (parseable bytes, not human tree)",
     "du": "du -s or du -sh only",
-    "git": "rtk git \u2026",
-    "gh": "rtk gh \u2026 or gh-axi \u2026",
+    "git": "rtk git …",
+    "gh": "rtk gh … or gh-axi …",
     "curl": "webfetch or rtk wget when fetching URLs",
     "pip": "uv pip",
     "pytest": "rtk test",
@@ -116,10 +120,15 @@
     "gdu": "du -s or du -sh only",
     "gsed": "fastedit edit or jq/yq for structured data",
     "gawk": "jq/yq for structured data or rtk grep for text",
-    "head": "rtk read (rtk output is already condensed \u2014 do not pipe through head/tail)",
-    "tail": "rtk read (rtk output is already condensed \u2014 do not pipe through head/tail)",
+    "head": "rtk read (rtk output is already condensed — do not pipe through head/tail)",
+    "tail": "rtk read (rtk output is already condensed — do not pipe through head/tail)",
     "less": "rtk read",
-    "more": "rtk read"
+    "more": "rtk read",
+    "python3": "fastedit edit (or uv for package ops — not for file writes)",
+    "python": "fastedit edit (or uv for package ops — not for file writes)",
+    "write": "fastedit edit via Shell",
+    "strreplace": "fastedit edit via Shell",
+    "delete": "ask captain"
   },
   "skills_installed": {
     "find-docs": "Context7 (~/.agents/skills/find-docs)",
@@ -142,5 +151,10 @@
     "less",
     "more",
     "cat"
+  ],
+  "native_write_deny": [
+    "write",
+    "strreplace",
+    "delete"
   ]
 }

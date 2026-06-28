@@ -53,7 +53,7 @@ done
 
 section "Codex hooks"
 RENDERED_CODEX="$(mktemp)"
-trap 'rm -f "$RENDERED_CODEX" "$RENDERED_CURSOR"' EXIT
+trap 'rm -f "$RENDERED_CODEX" "$RENDERED_CURSOR" "$RENDERED_AGY"' EXIT
 "$ROOT/bin/policy-render.sh" codex | jq -c '.hooks_json' > "$RENDERED_CODEX"
 if [ -f "$HOME/.codex/hooks.json" ]; then
   if jq -S . "$RENDERED_CODEX" | cmp -s - <(jq -S . "$HOME/.codex/hooks.json"); then
@@ -105,6 +105,38 @@ if [ -f "$HOME/.cursor/hooks.json" ]; then
   fi
 else
   bad "Cursor hooks.json missing"
+fi
+
+section "Antigravity (agy hooks + settings)"
+RENDERED_AGY="$(mktemp)"
+"$ROOT/bin/policy-render.sh" antigravity > "$RENDERED_AGY"
+if [ -f "$HOME/.gemini/config/hooks.json" ]; then
+  if jq -S '.antigravity_hooks_json' "$RENDERED_AGY" | cmp -s - <(jq -S '{ "tool-guard": ."tool-guard" }' "$HOME/.gemini/config/hooks.json"); then
+    ok "Antigravity hooks.json tool-guard matches rendered policy"
+  else
+    bad "Antigravity hooks.json drift"
+  fi
+  if jq -e '."tool-guard".enabled == true' "$HOME/.gemini/config/hooks.json" >/dev/null; then
+    ok "Antigravity tool-guard enabled"
+  else
+    bad "Antigravity tool-guard not enabled"
+  fi
+else
+  bad "Antigravity hooks.json missing"
+fi
+if [ -f "$HOME/.gemini/antigravity-cli/settings.json" ]; then
+  if jq -S '.antigravity_settings_json' "$RENDERED_AGY" | cmp -s - <(jq -S '{ toolPermission, permissions }' "$HOME/.gemini/antigravity-cli/settings.json"); then
+    ok "Antigravity settings.json policy keys match rendered"
+  else
+    bad "Antigravity settings.json drift (toolPermission/permissions)"
+  fi
+  if jq -e '.permissions.allow | index("command(rtk)")' "$HOME/.gemini/antigravity-cli/settings.json" >/dev/null; then
+    ok "Antigravity settings allow command(rtk)"
+  else
+    bad "Antigravity settings missing command(rtk) allow"
+  fi
+else
+  bad "Antigravity settings.json missing"
 fi
 
 section "OpenCode (delegate)"

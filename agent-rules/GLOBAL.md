@@ -30,6 +30,7 @@ Source of truth: `~/projects/machine-scratch/agent-rules/`.
 - Don't add docstrings, comments, or error handling beyond what was asked.
 - Remove imports/vars/functions YOUR changes made unused.
 - Every changed line must trace to the user request.
+- **Cursor / agent harnesses:** do not use native **Write**, **StrReplace**, or **Delete** — use `fastedit edit` via **Shell** (allowed). Cursor IDE native writes are denied by `preToolUse` hooks after restart.
 
 ---
 

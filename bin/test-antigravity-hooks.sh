@@ -67,7 +67,30 @@ else
   echo "  FAIL hook command path"
   fail=$((fail+1))
 fi
-rm -f "$RENDERED"
+RENDERED_SETTINGS="$(mktemp)"
+"$ROOT/bin/policy-render.sh" antigravity | jq -c '.antigravity_settings_json' > "$RENDERED_SETTINGS"
+if jq -e '.toolPermission == "request-review"' "$RENDERED_SETTINGS" >/dev/null; then
+  echo "  ok   toolPermission request-review"
+  pass=$((pass+1))
+else
+  echo "  FAIL toolPermission"
+  fail=$((fail+1))
+fi
+if jq -e '.permissions.allow | index("command(rtk)")' "$RENDERED_SETTINGS" >/dev/null; then
+  echo "  ok   permissions.allow command(rtk)"
+  pass=$((pass+1))
+else
+  echo "  FAIL permissions.allow command(rtk)"
+  fail=$((fail+1))
+fi
+if jq -e '.permissions.deny | index("command(rm)")' "$RENDERED_SETTINGS" >/dev/null; then
+  echo "  ok   permissions.deny command(rm)"
+  pass=$((pass+1))
+else
+  echo "  FAIL permissions.deny command(rm)"
+  fail=$((fail+1))
+fi
+rm -f "$RENDERED_SETTINGS"
 
 echo "== Antigravity adapter: native tools =="
 expect_agy_deny "list_dir" "rtk ls" '{"toolCall":{"name":"list_dir","args":{"path":"."}},"conversationId":"test"}'

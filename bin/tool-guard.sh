@@ -18,6 +18,7 @@
 # Tool gating:
 #   Bash       → match against tool-policy bash_allow / bash_deny / bash_ask
 #   Read|Grep|Glob|List → blanket deny per native_opencode_deny (use rtk via Bash)
+#   Write|StrReplace|Delete|Edit → deny per native_write_deny (use fastedit via Shell)
 #   Shell → same policy path as Bash (Cursor harness)
 
 set -euo pipefail
@@ -65,6 +66,29 @@ redirect_for() {
   jq -r --arg k "$1" '.redirect[$k] // empty' "$POLICY"
 }
 
+# Map native write tool names to native_write_deny policy keys (lowercase).
+native_write_policy_key() {
+  case "$1" in
+    Write)      echo write ;;
+    StrReplace) echo strreplace ;;
+    Delete)     echo delete ;;
+    Edit)       echo write ;;
+    *)          echo "" ;;
+  esac
+}
+
+deny_native_write_if_blocked() {
+  local key sug
+  key="$(native_write_policy_key "$TOOL")"
+  [ -z "$key" ] && return 1
+  if jq -e --arg k "$key" '.native_write_deny | index($k)' "$POLICY" >/dev/null; then
+    sug="$(redirect_for "$key")"
+    [ -z "$sug" ] && sug="fastedit edit via Shell"
+    emit_deny "Native ${TOOL} tool is disabled by tool-policy.json (native_write_deny). Use \`$sug\` instead."
+  fi
+  return 1
+}
+
 # ---------- native tool gating (Read / Grep / Glob) ----------
 case "$TOOL" in
   Read)
@@ -98,6 +122,9 @@ case "$TOOL" in
       emit_deny "Native List tool is disabled by tool-policy.json (native_opencode_deny). Use Bash with \`$sug\` instead."
     fi
     emit_allow
+    ;;
+  Write|StrReplace|Delete|Edit)
+    deny_native_write_if_blocked || emit_allow
     ;;
   Bash|Shell) : ;;      # Shell = Cursor's name for bash; fall through to matcher
   *)    emit_allow ;;   # not our concern

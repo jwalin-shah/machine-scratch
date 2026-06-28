@@ -46,6 +46,7 @@ Last aligned with live machine via `bin/verify-active-config.sh` + PATH check.
 | Claude settings | machine-scratch | `~/.claude/settings.json` (+ per-account dirs) | Native perms + PreToolUse hook |
 | Codex hooks | machine-scratch | `~/.codex/hooks.json` | `{ "hooks": { "PreToolUse": [...] } }` |
 | Antigravity hooks | machine-scratch | `~/.gemini/config/hooks.json` | Named `tool-guard` block + PreToolUse |
+| Antigravity settings | machine-scratch | `~/.gemini/antigravity-cli/settings.json` | `command(...)` allow/deny/ask from policy |
 | Cursor cli-config | machine-scratch | `~/.cursor/cli-config.json` | Shell allowlist + deny |
 | Cursor hooks | machine-scratch | `~/.cursor/hooks.json` | v1: beforeShellExecution, beforeReadFile, preToolUse |
 
@@ -134,7 +135,7 @@ These names appear in older docs or as `-axi` variants. We use the base CLI inst
 | Codex (`cx`) | Yes | `test-codex-hooks.sh` | **DONE** — Tier 3 deny/allow passed |
 | Cursor IDE | Yes | `test-cursor-hooks.sh` | **DONE** — Tier 3 (restart IDE after hook changes) |
 | cursor-agent (`cu`) | Same as Cursor | Same | Same |
-| Antigravity (`agy`) | Yes | `test-antigravity-hooks.sh` | `list_dir` deny → `rtk ls`; restart agy session after install |
+| Antigravity (`agy`) | Yes | `test-antigravity-hooks.sh` + `verify-active-config.sh` | `rtk ls` no prompt; restart `agy` after install |
 
 ## Still needs work (not blocking policy)
 

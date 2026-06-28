@@ -147,13 +147,19 @@ fi
 
 
 
-# ---------- Antigravity / agy (~/.gemini/config/hooks.json) ----------
-mkdir -p "$HOME/.gemini/config"
+# ---------- Antigravity / agy (hooks + run_command allowlist) ----------
+mkdir -p "$HOME/.gemini/config" "$HOME/.gemini/antigravity-cli"
 ln -sf "$ROOT/bin/tool-guard-antigravity.sh" "$HOME/bin/tool-guard-antigravity.sh"
 antigravity_hooks="$(jq -c '.antigravity_hooks_json' "$POLICY_OUT")"
 merge_json "$HOME/.gemini/config/hooks.json" "$antigravity_hooks"
 if ! jq -e '."tool-guard".enabled == true and (."tool-guard".PreToolUse | length > 0)' "$HOME/.gemini/config/hooks.json" >/dev/null; then
   echo "install-active-config: invalid Antigravity hooks.json (expected .tool-guard.PreToolUse)" >&2
+  exit 1
+fi
+antigravity_settings="$(jq -c '.antigravity_settings_json' "$POLICY_OUT")"
+merge_json "$HOME/.gemini/antigravity-cli/settings.json" "$antigravity_settings"
+if ! jq -e '.permissions.allow | index("command(rtk)")' "$HOME/.gemini/antigravity-cli/settings.json" >/dev/null; then
+  echo "install-active-config: Antigravity settings.json missing command(rtk) in permissions.allow" >&2
   exit 1
 fi
 

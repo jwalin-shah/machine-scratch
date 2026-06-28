@@ -18,6 +18,7 @@ run() {
     tool_name: $t,
     tool_input: (if $t == "Bash" or $t == "Shell" then {command: $c}
                  elif $t == "Read" then {file_path: $f}
+                 elif $t == "Write" or $t == "StrReplace" or $t == "Delete" or $t == "Edit" then {path: $f}
                  elif $t == "List" then {path: $c}
                  else {pattern: $c} end)
   }' | "$GUARD"
@@ -91,6 +92,8 @@ expect_deny "more" "rtk read"            Bash "more README.md"
 expect_deny "rtk head" "not a valid rtk" Bash "rtk head README.md"
 expect_deny "rtk tail" "not a valid rtk" Bash "rtk tail README.md"
 expect_deny "rtk cat"  "not a valid rtk" Bash "rtk cat README.md"
+expect_deny "python3" "fastedit edit" Bash "python3 -c \"print(1)\""
+expect_deny "python"  "fastedit edit" Bash "python -c \"print(1)\""
 
 echo "== Bash ask tier (captain confirm) =="
 expect_deny "git push"  "captain's confirmation"  Bash "git push origin main"
@@ -119,6 +122,10 @@ expect_deny "Read"  "Native Read tool is disabled"  Read  "/tmp/foo" "/tmp/foo"
 expect_deny "Grep"  "Native Grep tool is disabled"  Grep  "pattern"
 expect_deny "Glob"  "Native Glob tool is disabled"  Glob  "**/*.md"
 expect_deny "List"  "Native List tool is disabled"  List  "."
+expect_deny "Write" "native_write_deny" Write "x" "x"
+expect_deny "StrReplace" "native_write_deny" StrReplace "x" "x"
+expect_deny "Delete" "native_write_deny" Delete "x" "x"
+expect_deny "Edit" "native_write_deny" Edit "x" "x"
 
 echo
 echo "Passed: $pass   Failed: $fail"

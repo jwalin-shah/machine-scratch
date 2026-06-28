@@ -20,7 +20,7 @@
 #     "opencode": { "permission":  { "bash": {...}, "read": "deny", ... } },
 #     "cursor":   { "permissions": { "allow": [...], "deny": [...] } },
 #     "codex":        { "hooks_json":  { ... } }    # codex native unverified, hook only
-#     "antigravity":  { "antigravity_hooks_json": { "tool-guard": { ... } } }
+#     "antigravity":  { "antigravity_hooks_json": {...}, "antigravity_settings_json": {...} }
 #   }
 
 set -euo pipefail
@@ -131,7 +131,7 @@ render_cursor_hooks() {
             { matcher: "Read", command: $g, timeout: 5 }
           ],
           preToolUse: [
-            { matcher: "Shell|Read|Grep|Glob|List", command: $g, timeout: 5 }
+            { matcher: "Shell|Read|Grep|Glob|List|Write|StrReplace|Delete", command: $g, timeout: 5 }
           ]
         }
       }
@@ -145,7 +145,11 @@ render_cursor_hooks() {
 # stdout: {"decision":"allow"} | {"decision":"deny","reason":"..."}
 render_antigravity() {
   local guard="${TOOL_GUARD_ANTIGRAVITY_PATH:-$HOME/bin/tool-guard-antigravity.sh}"
-  jq -n --arg g "$guard" '
+  local allow_json deny_json ask_json
+  allow_json=$(allow_keys | jq -R . | jq -s 'map("command(" + . + ")")')
+  deny_json=$(deny_keys  | jq -R . | jq -s 'map("command(" + . + ")")')
+  ask_json=$(ask_keys    | jq -R . | jq -s 'map("command(" + . + ")")')
+  jq -n     --arg g "$guard"     --argjson allow "$allow_json"     --argjson deny "$deny_json"     --argjson ask "$ask_json" '
     {
       antigravity_hooks_json: {
         "tool-guard": {
@@ -162,6 +166,14 @@ render_antigravity() {
               ]
             }
           ]
+        }
+      },
+      antigravity_settings_json: {
+        toolPermission: "request-review",
+        permissions: {
+          allow: $allow,
+          deny:  $deny,
+          ask:   $ask
         }
       }
     }'
@@ -211,14 +223,15 @@ case "${1:-all}" in
       --argjson opencode "$(render_opencode)" \
       --argjson codex    "$(render_codex)" \
       --argjson cursor_hooks "$(render_cursor_hooks | jq -c '.cursor_hooks_json')" \
-      --argjson antigravity_hooks "$(render_antigravity | jq -c '.antigravity_hooks_json')" '
+      --argjson antigravity "$(render_antigravity)" '
       {
         claude:   $claude,
         cursor:   $cursor,
         opencode: $opencode,
         codex:    $codex,
         cursor_hooks_json: $cursor_hooks,
-        antigravity_hooks_json: $antigravity_hooks
+        antigravity_hooks_json: $antigravity.antigravity_hooks_json,
+        antigravity_settings_json: $antigravity.antigravity_settings_json
       }'
     ;;
   *)

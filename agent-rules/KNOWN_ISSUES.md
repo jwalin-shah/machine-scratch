@@ -74,6 +74,10 @@ After `bin/install-active-config.sh`, **restart Cursor IDE** so `~/.cursor/hooks
 Hooks use Cursor v1 schema (`beforeShellExecution`, `beforeReadFile`, `preToolUse`) via
 `~/bin/tool-guard-cursor.sh`. Verify with `rtk test bin/test-cursor-hooks.sh`.
 
+Native **Write** / **StrReplace** / **Delete** are blocked in `preToolUse` (use `fastedit edit` via Shell). **Restart Cursor** after install so hooks reload.
+
+`python3` / `python` are denied in Shell (script-interpreter bypass for file writes) — use `fastedit edit` or `uv` for package ops, not heredocs.
+
 ## Codex hooks
 
 Codex `PreToolUse` currently fires for **Bash only** — native Read/Grep are not hookable in
@@ -81,12 +85,14 @@ Codex yet. Bash policy (`cat`, `rg`, `git`, …) is enforced via `~/.codex/hooks
 Schema: `{ "hooks": { "PreToolUse": [...] } }` (PascalCase, not `preToolUse`).
 
 
-## Antigravity (`agy`) hooks
+## Antigravity (`agy`) hooks + run_command allowlist
 
 After `bin/install-active-config.sh`, Antigravity PreToolUse runs via named block `tool-guard` in
 `~/.gemini/config/hooks.json` and `~/bin/tool-guard-antigravity.sh` (maps `list_dir` / `read_file` /
-`run_command` to tool-guard). Verify with `rtk test bin/test-antigravity-hooks.sh`. Live: start an
-`agy` session with "please show structure" — `list_dir` should deny and steer to `rtk ls`.
+`run_command` to tool-guard). Native `run_command` auto-approve comes from
+`~/.gemini/antigravity-cli/settings.json` (rendered from `tool-policy.json` `bash_allow` as
+`command(rtk)`, etc.). **Restart `agy` after install** so settings reload. Verify with
+`rtk test bin/test-antigravity-hooks.sh`. Live: `rtk ls` should not prompt; `list_dir` should deny.
 
 ## rtk output — no head/tail piping
 

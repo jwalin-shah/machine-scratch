@@ -72,13 +72,15 @@ Never hand-edit `~/.claude/settings.json` permission arrays or `~/.cursor/cli-co
 | Codex | `~/.codex/hooks.json` | `~/bin/tool-guard.sh` |
 | Cursor | `~/.cursor/hooks.json` + `cli-config.json` | `~/bin/tool-guard-cursor.sh` |
 | OpenCode | `~/.config/opencode/opencode.json` + plugin | `plugins/tool-guard/index.js` |
-| Antigravity (`agy`) | `~/.gemini/config/hooks.json` | `~/bin/tool-guard-antigravity.sh` |
+| Antigravity (`agy`) | `~/.gemini/config/hooks.json` + `~/.gemini/antigravity-cli/settings.json` | `~/bin/tool-guard-antigravity.sh` |
 
 Codex: PreToolUse matches Bash only (upstream limitation).
 Cursor: restart IDE after install; uses v1 hooks schema.
 
 ### Antigravity (`agy`)
 
-Wired via named `tool-guard` block in `~/.gemini/config/hooks.json`. Adapter maps `run_command` → Shell,
+Wired via named `tool-guard` block in `~/.gemini/config/hooks.json` plus `settings.json` under
+`~/.gemini/antigravity-cli/` (`toolPermission: request-review`, `permissions.allow` as `command(rtk)` etc.
+from `bash_allow`). **Restart `agy` after `bin/install-active-config.sh`.** Adapter maps `run_command` → Shell,
 `list_dir` / `read_file` / `view_file` / `find_by_name` → List/Read/Glob denies. Verify:
-`rtk test bin/test-antigravity-hooks.sh`. Live: `agy` + "please show structure" should deny `list_dir` and suggest `rtk ls`.
+`rtk test bin/test-antigravity-hooks.sh`. Live: `rtk ls` should not prompt; `list_dir` should deny.
