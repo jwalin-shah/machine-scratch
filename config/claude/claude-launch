@@ -1,0 +1,203 @@
+#!/opt/homebrew/bin/python3
+"""claude-launch — config-driven Claude Code endpoint launcher.
+
+Endpoint profiles live in claude-endpoints.toml (sibling file). Launching a
+profile sets CLAUDE_CONFIG_DIR + the gateway env vars and execs Claude Code.
+Adding an endpoint is a config edit, not a code change.
+
+Usage:
+    claude-launch run   <profile> [claude args...]   # launch a session
+    claude-launch check <profile>                    # resolve + preflight, no launch
+
+Profiles are whatever claude-endpoints.toml defines (today: a b token pioneer nvidia).
+
+Observability: every launch logs a one-line summary (profile, base_url, key
+source, latency) to stderr and ~/.claude/logs/launch.log. With preflight on, the
+endpoint is pinged first and launch is aborted ONLY when it is fully unreachable.
+"""
+import os
+import sys
+import tomllib
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, HERE)
+try:
+    import agentlib
+except Exception as e:  # bootstrap-path: fail loud, never silently
+    sys.exit(f"claude-launch: cannot import agentlib from {HERE}: {e}")
+
+CONFIG_PATH = os.environ.get("CLAUDE_ENDPOINTS_CONFIG") or os.path.join(HERE, "claude-endpoints.toml")
+COMPONENT = "claude-launch"
+
+
+def die(msg):
+    agentlib.log(COMPONENT, msg, level="error")
+    sys.exit(1)
+
+
+def usage():
+    sys.stderr.write(__doc__)
+    sys.exit(1)
+
+
+def load_config():
+    try:
+        with open(CONFIG_PATH, "rb") as f:
+            return tomllib.load(f)
+    except FileNotFoundError:
+        die(f"config not found: {CONFIG_PATH}")
+    except tomllib.TOMLDecodeError as e:
+        die(f"config parse error in {CONFIG_PATH}: {e}")
+
+
+def mask(value):
+    """Show that a secret resolved without leaking it."""
+    if not value:
+        return "<unresolved>"
+    return f"****{value[-4:]}" if len(value) > 4 else "****"
+
+
+def resolve_key(profile, name):
+    key = profile.get("key")
+    if not key:
+        return None  # OAuth profile, no key
+    src = key.get("source")
+    if src == "literal":
+        return key.get("value")
+    if src == "infisical":
+        v = agentlib.resolve_secret(
+            key["path"], key["field"], env_fallback=key.get("env"))
+        if not v:
+            die(f"{name}: could not resolve key {key['field']} from "
+                f"Infisical {key['path']} (or env {key.get('env', '-')}). "
+                f"Store it, or export {key.get('env', key['field'])}.")
+        return v
+    if src == "env":
+        v = os.environ.get(key["env"])
+        if not v:
+            die(f"{name}: env var {key['env']} is not set.")
+        return v
+    die(f"{name}: unknown key.source '{src}' in config.")
+
+
+def build_env(profile, name, defaults):
+    """Return (env, summary_fields, ping_url_or_None)."""
+    env = os.environ.copy()
+    env["CLAUDE_CONFIG_DIR"] = os.path.expanduser(profile["config_dir"])
+
+    base_url = profile.get("base_url")
+    if base_url and profile.get("base_url_env"):
+        base_url = os.environ.get(profile["base_url_env"], base_url)
+    if base_url and profile.get("strip_v1_suffix"):
+        base_url = base_url.rstrip("/").removesuffix("/v1")
+
+    fields = {"profile": name, "config_dir": profile["config_dir"]}
+    ping_url = None
+
+    if base_url:
+        key = resolve_key(profile, name)
+        env["ANTHROPIC_API_KEY"] = key
+        env["ANTHROPIC_BASE_URL"] = base_url
+        fields["base_url"] = base_url
+        fields["key"] = f"{profile.get('key', {}).get('source', '?')}:{mask(key)}"
+
+        if profile.get("gateway_discovery"):
+            env["CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY"] = "1"
+            fields["discovery"] = "on"
+
+        # Always clear any inherited custom-model-option, then pin only if asked.
+        # An inherited pin suppresses gateway discovery (the picker-only-shows-one bug).
+        env.pop("ANTHROPIC_CUSTOM_MODEL_OPTION", None)
+        cmo = profile.get("custom_model_option")
+        if cmo:
+            env["ANTHROPIC_CUSTOM_MODEL_OPTION"] = cmo
+            fields["model_option"] = cmo
+
+        ping_url = base_url.rstrip("/") + "/v1/models"
+    else:
+        fields["base_url"] = "oauth (api.anthropic.com)"
+
+    # Arbitrary per-profile env injection (applied for any profile). Used to remap
+    # the picker's built-in aliases to gateway models via ANTHROPIC_DEFAULT_*_MODEL,
+    # so e.g. selecting "Opus" routes to deepseek. See claude-endpoints.toml.
+    extra = profile.get("env", {})
+    for k, v in extra.items():
+        env[k] = str(v)
+    if extra:
+        fields["env"] = "+".join(sorted(extra))
+
+    return env, fields, ping_url
+
+
+def preflight(name, ping_url, profile, defaults):
+    if ping_url is None:
+        return
+    if not profile.get("preflight", defaults.get("preflight", True)):
+        return
+    timeout = profile.get("preflight_timeout", defaults.get("preflight_timeout", 5.0))
+    slow_ms = defaults.get("slow_warn_ms", 3000.0)
+    block = profile.get("preflight_block_on_dead", defaults.get("preflight_block_on_dead", True))
+
+    r = agentlib.ping(ping_url, timeout=timeout)
+    if not r["reachable"]:
+        msg = f"{name}: endpoint unreachable at {ping_url} — {r['error']}"
+        if block:
+            die(msg + " (is the proxy running?)")
+        agentlib.log(COMPONENT, msg + " (continuing anyway)", level="warn")
+        return
+    if r["status"] and r["status"] >= 500:
+        agentlib.log(COMPONENT,
+                     f"{name}: endpoint returned {r['status']} ({r['latency_ms']}ms) — continuing",
+                     level="warn")
+    elif r["latency_ms"] and r["latency_ms"] > slow_ms:
+        agentlib.log(COMPONENT,
+                     f"{name}: endpoint slow ({r['latency_ms']}ms) — continuing",
+                     level="warn")
+    return r
+
+
+def summary_line(fields, ping_result, logfile):
+    parts = [f"{k}={v}" for k, v in fields.items()]
+    if ping_result:
+        parts.append(f"preflight={ping_result['status']}@{ping_result['latency_ms']}ms")
+    agentlib.log(COMPONENT, " ".join(parts), level="info", logfile=logfile)
+
+
+def main():
+    if len(sys.argv) < 3 or sys.argv[1] not in ("run", "check"):
+        usage()
+    action = sys.argv[1]
+    name = sys.argv[2]
+    claude_args = sys.argv[3:]
+
+    cfg = load_config()
+    defaults = cfg.get("defaults", {})
+    profiles = cfg.get("profiles", {})
+    if name not in profiles:
+        die(f"unknown profile '{name}'. Defined: {', '.join(sorted(profiles))}")
+
+    profile = profiles[name]
+    logfile = defaults.get("logfile")
+    # Route ALL launch events (summaries, warnings, fatal errors) to one log.
+    if logfile:
+        agentlib.DEFAULT_LOGFILE = os.path.expanduser(logfile)
+
+    env, fields, ping_url = build_env(profile, name, defaults)
+    ping_result = preflight(name, ping_url, profile, defaults)
+    summary_line(fields, ping_result, logfile)
+
+    if action == "check":
+        agentlib.log(COMPONENT, f"{name}: check OK (not launching)", level="info", logfile=logfile)
+        return
+
+    claude_bin = defaults.get("claude_bin", "/opt/homebrew/bin/claude")
+    if not os.path.exists(claude_bin):
+        die(f"Claude binary not found at {claude_bin}")
+    try:
+        os.execve(claude_bin, [claude_bin] + claude_args, env)
+    except OSError as e:
+        die(f"exec failed for {claude_bin}: {e}")
+
+
+if __name__ == "__main__":
+    main()

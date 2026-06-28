@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Claude Code via TokenRouter gateway (profile: token).
+set -e
+exec ~/bin/claude-launch run token --dangerously-skip-permissions "$@"

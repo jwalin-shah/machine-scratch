@@ -1,4 +1,6 @@
 # Bootstrap script for machine-scratch
+# REFERENCE ONLY: do not run this as the source of truth on an existing machine.
+# Review every line, then promote small pieces through incremental installers.
 # One command to go from clean macOS → full agent workstation.
 #
 # Downloads:
@@ -118,12 +120,13 @@ else
   echo '{"PreToolUse": [{"matcher": "Bash|Read", "hooks": [{"type": "command", "command": "'$HOME'/bin/tool-guard.sh", "timeout": 3, "statusMessage": "Checking tool choice..."}]}]}' > ~/.claude/settings.json
 fi
 
-# Codex
+# Codex — schema: { "hooks": { "PreToolUse": [...] } } (not bare preToolUse)
 mkdir -p ~/.codex
+CODEX_HOOKS='{"hooks":{"PreToolUse":[{"matcher":"Bash|Read|Grep|Glob","hooks":[{"type":"command","command":"'"$HOME"'/bin/tool-guard.sh","timeout":5,"statusMessage":"Checking tool choice..."}]}]}}'
 if [ -f ~/.codex/hooks.json ]; then
-  jq '. + {"preToolUse": [{"matcher": "Bash|Read", "hooks": [{"command": "'$HOME'/bin/tool-guard.sh", "timeout": 3}]}]}' ~/.codex/hooks.json > /tmp/codex-hooks.json && mv /tmp/codex-hooks.json ~/.codex/hooks.json
+  jq --argjson h "$CODEX_HOOKS" '. * $h' ~/.codex/hooks.json > /tmp/codex-hooks.json && mv /tmp/codex-hooks.json ~/.codex/hooks.json
 else
-  echo '{"preToolUse": [{"matcher": "Bash|Read", "hooks": [{"command": "'$HOME'/bin/tool-guard.sh", "timeout": 3}]}]}' > ~/.codex/hooks.json
+  printf '%s\n' "$CODEX_HOOKS" | jq '.' > ~/.codex/hooks.json
 fi
 
 # ── 15. LLM-TLDR warm ──

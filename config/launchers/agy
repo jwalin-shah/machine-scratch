@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Google Antigravity CLI — uses its own auth, not secret-cache.
+set -euo pipefail
+exec /opt/homebrew/bin/agy "$@"

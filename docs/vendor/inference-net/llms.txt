@@ -1,0 +1,126 @@
+# Inference.net (Catalyst) - docs index (mirror of https://docs.inference.net/llms.txt)
+# Captured 2026-06-27. Source of truth is the live URL above.
+
+> Use Inference.net to observe, evaluate, train, and deploy LLM systems.
+
+## API
+- API quickstart                   https://docs.inference.net/api/api-quickstart.md
+- Function calling                 https://docs.inference.net/api/function-calling.md
+- Structured outputs               https://docs.inference.net/api/structured-outputs.md
+- Vision                           https://docs.inference.net/api/vision.md
+- Rate limits                      https://docs.inference.net/api/rate-limits.md
+- Data retention                   https://docs.inference.net/api/data-retention.md
+- Async overview                   https://docs.inference.net/api/async-inference/overview.md
+- Async Batch API                  https://docs.inference.net/api/async-inference/batch-api.md
+- Async Group API                  https://docs.inference.net/api/async-inference/group.md
+- Async Webhooks (start)           https://docs.inference.net/api/async-inference/webhooks/getting-started-with-webhooks.md
+- Async Webhooks (ref)             https://docs.inference.net/api/async-inference/webhooks/quick-reference.md
+
+## CLI (`inf`)
+- Install CLI                      https://docs.inference.net/cli/overview.md
+- Authentication                   https://docs.inference.net/cli/authentication.md
+- Projects                         https://docs.inference.net/cli/projects.md
+- Models                           https://docs.inference.net/cli/models.md
+- Datasets                         https://docs.inference.net/cli/datasets.md
+- Evals                            https://docs.inference.net/cli/evals.md
+- HALO                             https://docs.inference.net/cli/halo.md
+- Inferences                       https://docs.inference.net/cli/inferences.md
+- Instrument                       https://docs.inference.net/cli/instrument.md
+- Spans                            https://docs.inference.net/cli/spans.md
+- Traces                           https://docs.inference.net/cli/traces.md
+- Training                         https://docs.inference.net/cli/training.md
+- Dashboard                        https://docs.inference.net/cli/dashboard.md
+
+## Get started
+- Record your first LLM call       https://docs.inference.net/get-started/record-first-call.md
+- Capture your first trace         https://docs.inference.net/get-started/capture-first-trace.md
+- Run your first eval              https://docs.inference.net/get-started/run-first-eval.md
+- Analyze your traces              https://docs.inference.net/get-started/analyze-traces.md
+- Signals                          https://docs.inference.net/get-started/signals.md
+- Train and deploy a custom model  https://docs.inference.net/get-started/train-and-deploy.md
+
+## Integrations
+- Overview                         https://docs.inference.net/integrations/overview.md
+- Install with AI                  https://docs.inference.net/integrations/install-with-ai.md
+- MCP server                       https://docs.inference.net/integrations/mcp-server.md
+- Gateway overview                 https://docs.inference.net/integrations/gateway/overview.md
+- Gateway quickstart               https://docs.inference.net/integrations/gateway/quickstart.md
+- LangChain                        https://docs.inference.net/integrations/frameworks/langchain.md
+- ElevenLabs                       https://docs.inference.net/integrations/agent-platforms/elevenlabs.md
+- Provider: OpenAI                 https://docs.inference.net/integrations/model-providers/openai.md
+- Provider: Anthropic              https://docs.inference.net/integrations/model-providers/anthropic.md
+- Provider: Google Gemini          https://docs.inference.net/integrations/model-providers/google-gemini.md
+- Provider: Vertex AI              https://docs.inference.net/integrations/model-providers/vertex-ai.md
+- Provider: Groq                   https://docs.inference.net/integrations/model-providers/groq.md
+- Provider: Cerebras               https://docs.inference.net/integrations/model-providers/cerebras.md
+- Provider: OpenRouter             https://docs.inference.net/integrations/model-providers/openrouter.md
+
+## Traces SDK (OpenInference)
+- Quickstart                       https://docs.inference.net/integrations/traces/quickstart.md
+- Overview                         https://docs.inference.net/integrations/traces/overview.md
+- Attributes & span kinds          https://docs.inference.net/integrations/traces/attributes.md
+- Agent identity                   https://docs.inference.net/integrations/traces/agent-identity.md
+- Manual spans                     https://docs.inference.net/integrations/traces/manual-spans.md
+- Span handle API                  https://docs.inference.net/integrations/traces/handle-api.md
+- Production agent example         https://docs.inference.net/integrations/traces/production-agent-example.md
+- Snippets                         https://docs.inference.net/integrations/traces/examples.md
+- Troubleshooting                  https://docs.inference.net/integrations/traces/troubleshooting.md
+- Vercel AI SDK                    https://docs.inference.net/integrations/traces/ai-sdk.md
+- Anthropic                        https://docs.inference.net/integrations/traces/anthropic.md
+- OpenAI                           https://docs.inference.net/integrations/traces/openai.md
+- OpenAI Agents                    https://docs.inference.net/integrations/traces/openai-agents.md
+- LangChain                        https://docs.inference.net/integrations/traces/langchain.md
+- LangGraph                        https://docs.inference.net/integrations/traces/langgraph.md
+- LangSmith                        https://docs.inference.net/integrations/traces/langsmith.md
+- Langfuse                         https://docs.inference.net/integrations/traces/langfuse.md
+- LiveKit Agents                   https://docs.inference.net/integrations/traces/livekit-agents.md
+- ElevenLabs Agents                https://docs.inference.net/integrations/traces/elevenlabs.md
+- Cursor SDK                       https://docs.inference.net/integrations/traces/cursor-sdk.md
+- Claude Agent SDK                 https://docs.inference.net/integrations/traces/claude-agent-sdk.md
+- Claude Code SDK                  https://docs.inference.net/integrations/traces/claude-code-sdk.md
+- OpenCode                         https://docs.inference.net/integrations/traces/opencode.md
+- Pydantic AI                      https://docs.inference.net/integrations/traces/pydantic-ai.md
+- PI AI                            https://docs.inference.net/integrations/traces/pi-ai.md
+- Vercel Eve                       https://docs.inference.net/integrations/traces/eve.md
+
+## Platform
+- Workflow overview                https://docs.inference.net/workflow.md
+- Introduction                     https://docs.inference.net/introduction.md
+- Gateway: overview                https://docs.inference.net/platform/gateway/overview.md
+- Gateway: integrate               https://docs.inference.net/platform/gateway/integrate.md
+- Gateway: create task             https://docs.inference.net/platform/gateway/create-a-task.md
+- Gateway: tasks                   https://docs.inference.net/platform/gateway/tasks.md
+- Gateway: inference viewer        https://docs.inference.net/platform/gateway/inference-viewer.md
+- Gateway: metrics explorer        https://docs.inference.net/platform/gateway/metrics-explorer.md
+- Gateway: prompt versions         https://docs.inference.net/platform/gateway/prompt-versions.md
+- Eval: overview                   https://docs.inference.net/platform/eval/overview.md
+- Eval: writing rubrics            https://docs.inference.net/platform/eval/write-a-rubric.md
+- Eval: LLM-as-a-judge             https://docs.inference.net/platform/eval/llm-as-a-judge.md
+- Eval: comparisons                https://docs.inference.net/platform/eval/run-a-comparison.md
+- Eval: read results               https://docs.inference.net/platform/eval/read-the-results.md
+- Eval: offline vs online          https://docs.inference.net/platform/eval/offline-vs-online.md
+- Datasets: overview               https://docs.inference.net/platform/datasets/overview.md
+- Datasets: upload                 https://docs.inference.net/platform/datasets/upload-a-dataset.md
+- Datasets: formats                https://docs.inference.net/platform/datasets/formats.md
+- Datasets: from traffic           https://docs.inference.net/platform/datasets/build-from-traffic.md
+- Train: overview                  https://docs.inference.net/platform/train/overview.md
+- Train: choose recipe             https://docs.inference.net/platform/train/choose-a-recipe.md
+- Train: launch a run              https://docs.inference.net/platform/train/launch-a-run.md
+- Train: monitor                   https://docs.inference.net/platform/train/mid-training-evals.md
+- Train: after training            https://docs.inference.net/platform/train/after-training.md
+- Train: troubleshoot              https://docs.inference.net/platform/train/troubleshooting.md
+- Deploy: overview                 https://docs.inference.net/platform/deploy/overview.md
+- Deploy: open-source models       https://docs.inference.net/platform/deploy/open-source-models.md
+- Deploy: deploy a model           https://docs.inference.net/platform/deploy/deploy-a-model.md
+- Deploy: call your deployment     https://docs.inference.net/platform/deploy/call-your-deployment.md
+- Deploy: serverless               https://docs.inference.net/platform/deploy/serverless-deployments.md
+- Deploy: manage & monitor         https://docs.inference.net/platform/deploy/manage-and-monitor.md
+
+## Reference
+- API keys & auth                  https://docs.inference.net/reference/api-keys.md
+- Rate limits                      https://docs.inference.net/reference/rate-limits.md
+- Glossary                         https://docs.inference.net/reference/glossary.md
+
+## Workhorse models
+- ClipTagger                       https://docs.inference.net/workhorse-models/cliptagger.md
+- Schematron                       https://docs.inference.net/workhorse-models/schematron.md

@@ -1,0 +1,12 @@
+{
+  "model": "tokenrouter/deepseek/deepseek-v4-flash",
+  "small_model": "tokenrouter/deepseek/deepseek-v4-flash",
+  "agent": {
+    "build": {
+      "model": "tokenrouter/deepseek/deepseek-v4-flash"
+    },
+    "review": {
+      "model": "tokenrouter/deepseek/deepseek-v4-flash"
+    }
+  }
+}

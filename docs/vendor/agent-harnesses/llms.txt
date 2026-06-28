@@ -1,0 +1,46 @@
+# Agent harness docs — Context7 index
+# Do NOT mirror full upstream docs here. Use ctx7 for live lookup.
+# House policy (what we allow/deny) is in docs/TOOL_POLICY.md + config/tool-policy.json.
+
+> Vendor reference for Claude, OpenCode, Cursor, Codex hook and permission schemas.
+
+## Context7 library IDs
+
+| Harness | Library ID | Notes |
+|---|---|---|
+| Codex CLI + hooks | /websites/developers_openai_codex | hooks.json, PreToolUse, SessionStart |
+| Codex (repo) | /openai/codex | Rust CLI source, deeper hook types |
+| Cursor IDE + hooks | /websites/cursor | hooks v1, beforeShellExecution, beforeReadFile |
+| Cursor CLI | /websites/cursor_cli | cursor-agent, permissions reference |
+| OpenCode | /anomalyco/opencode | permission block, bash patterns, plugins |
+| OpenCode (site) | /websites/opencode_ai | config reference |
+| Claude Code | /websites/code_claude | settings.json, PreToolUse, permissions |
+
+## Example ctx7 queries
+
+```bash
+ctx7 docs /websites/developers_openai_codex "hooks.json PreToolUse configuration schema"
+ctx7 docs /websites/developers_openai_codex "PreToolUse permissionDecision deny hookSpecificOutput"
+ctx7 docs /websites/cursor "hooks.json beforeShellExecution beforeReadFile preToolUse version 1"
+ctx7 docs /websites/cursor "beforeShellExecution output permission deny agent_message"
+ctx7 docs /websites/cursor "cli-config permissions allowlist Shell deny"
+ctx7 docs /anomalyco/opencode "permission bash deny allow ask glob patterns"
+ctx7 docs /anomalyco/opencode "permission read grep glob list deny"
+ctx7 docs /websites/code_claude "PreToolUse hooks settings.json permissions deny"
+```
+
+## Official URLs (when ctx7 is unavailable)
+
+- Codex hooks: https://developers.openai.com/codex/hooks
+- Cursor hooks: https://cursor.com/docs/hooks
+- Cursor CLI permissions: https://cursor.com/docs/cli/reference/permissions
+- OpenCode permissions: https://opencode.ai/docs/permissions
+- Claude Code hooks: https://code.claude.com/docs/en/hooks
+
+## House docs (NOT in ctx7 — read these for our machine)
+
+- docs/TOOL_POLICY.md — architecture, testing tiers, harness matrix
+- docs/PERMISSIONS.md — current allow/deny summary + test commands
+- config/tool-policy.json — source of truth JSON
+- agent-rules/TOOL_REGISTRY.md — agent-facing cheatsheet
+- agent-rules/KNOWN_ISSUES.md — harness-specific caveats

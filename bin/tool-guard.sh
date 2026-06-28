@@ -1,144 +1,186 @@
 #!/usr/bin/env bash
-# tool-guard.sh — PreToolUse hook that DENIES suboptimal tool usage
-# Reads JSON from stdin (tool_name + tool_input) and outputs a deny message
-# with agent-optimal alternatives.
+# tool-guard.sh — Claude Code PreToolUse hook that enforces config/tool-policy.json.
 #
-# Agent-optimal principle: only the agent reads output, so use tools designed
-# for LLM consumption (rtk subcommands) over tools designed for human terminals.
-# Never cd — harnesses have workdir/cwd parameters. Use absolute paths.
+# Source of truth: <repo>/config/tool-policy.json
+# Same policy drives OpenCode (config/opencode/opencode.json `permission` block
+# and config/opencode/plugins/tool-guard/index.js). When the JSON changes,
+# both adapters change with it — no per-adapter hardcoded lists.
 #
-# Install in .claude/settings.json like:
-#   "PreToolUse": [{
-#     "matcher": "Bash|Read",
-#     "hooks": [{
-#       "type": "command",
-#       "command": "/Users/jwalinshah/bin/tool-guard.sh",
-#       "timeout": 3,
-#       "statusMessage": "Checking tool choice..."
-#     }]
-#   }]
+# Protocol (Claude Code hooks):
+#   stdin: PreToolUse event JSON (tool_name, tool_input, …)
+#   stdout (allow, silent):  no output, exit 0
+#   stdout (deny):           {"hookSpecificOutput":{"hookEventName":"PreToolUse",
+#                                "permissionDecision":"deny",
+#                                "permissionDecisionReason":"<msg>"}}
+#                            exit 0
+#   Exit 2 is reserved for unexpected errors (also blocks, with stderr shown).
 #
-# Returns:
-#   exit 0 + systemMessage → BLOCKED (agent receives the message)
-#   exit 0 + no output     → ALLOWED (pass through)
+# Tool gating:
+#   Bash       → match against tool-policy bash_allow / bash_deny / bash_ask
+#   Read|Grep|Glob|List → blanket deny per native_opencode_deny (use rtk via Bash)
+#   Shell → same policy path as Bash (Cursor harness)
 
 set -euo pipefail
 
-INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool_name // ""')
-CMD=$(echo "$INPUT" | jq -r '.tool_input.command // .tool_input.file_path // ""')
-
-# Skip non-Bash tools
-[ "$TOOL" != "Bash" ] && exit 0
-
-# Extract first command word (bash builtin only)
-read -r RAW _ <<< "$CMD"
-
-# Scan the FULL command for banned tools anywhere (after &&, ||, ;, |)
-# This catches compound commands like `cd foo && ls -la`
-BANNED_TOOLS=""
-for BANNED in cat ls grep find rm; do
-  # Match the banned tool as a standalone word (not substring of another word)
-  if echo "$CMD" | grep -Eq "(^|\||\|\||\&\&|;|\|&)\s*${BANNED}(\s|$|&&|\|\||;|\|)"; then
-    BANNED_TOOLS="$BANNED_TOOLS $BANNED"
-  fi
+# ---------- resolve policy file ----------
+SELF="${BASH_SOURCE[0]}"
+# Follow symlink (the installer links ~/bin/tool-guard.sh → repo/bin/tool-guard.sh)
+while [ -L "$SELF" ]; do
+  TARGET="$(readlink "$SELF")"
+  case "$TARGET" in
+    /*) SELF="$TARGET" ;;
+    *)  SELF="$(cd "$(dirname "$SELF")" && pwd)/$TARGET" ;;
+  esac
 done
+REPO_ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+POLICY="${TOOL_POLICY_FILE:-$REPO_ROOT/config/tool-policy.json}"
 
-SUGGESTION=""
-
-case "$RAW" in
-  cd)
-    # Strip leading whitespace and get target path
-    CD_TARGET="${CMD#"${CMD%%[![:space:]]*}"}"
-    CD_TARGET="${CD_TARGET#cd }"
-    SUGGESTION="Never \`cd\`. Use absolute paths or the harness workdir/cwd parameter instead."
-    ;;
-  awk)
-    SUGGESTION="Use \`jq\` for structured data or \`rtk grep\` for text instead of awk."
-    ;;
-  bat)
-    SUGGESTION="Use \`rtk read\` instead of bat — intelligent filtering, token-optimized."
-    ;;
-  cat)
-    SUGGESTION="Use \`rtk read\` instead of cat — reads the relevant parts, not the whole file."
-    ;;
-  ls)
-    SUGGESTION="Use \`rtk ls\` instead of ls — token-optimized. Or \`rtk tree\` for tree view."
-    ;;
-  find)
-    SUGGESTION="Use \`fd\` or \`rtk find\` instead of find — faster, .gitignore-aware."
-    ;;
-  grep)
-    SUGGESTION="Use \`rtk grep\` instead of grep — wraps rg for speed, compresses output."
-    ;;
-  du)
-    if echo "$CMD" | grep -Eq '(^|\||;\s*)\s*du\s+-s'; then
-      # du -sh or du -s — allow, already efficient
-      :
-    else
-      SUGGESTION="Use \`du -s\` instead of bare du — one line, raw bytes (parseable)."
-    fi
-    ;;
-  curl)
-    SUGGESTION="Use the WebFetch tool instead of curl — strips HTML to markdown, saves tokens."
-    ;;
-  gh)
-    SUGGESTION="Use \`gh-axi\` instead of gh — token-optimized GitHub CLI wrapper."
-    ;;
-  sed)
-    SUGGESTION="Use \`fastedit edit\` instead of sed — AST-aware, symbol-based, no fragile line numbers."
-    ;;
-  rm)
-    SUGGESTION="\`rm\` needs the captain's permission. Tell the captain what you want to delete and why, then retry."
-    ;;
-  wc)
-    SUGGESTION="Use \`rtk wc\` instead of wc — strips paths and padding, compresses output."
-    ;;
-  python3|python)
-    if echo "$CMD" | grep -Eq '\s+-c\s'; then
-      SUGGESTION="Don't write ad-hoc Python scripts. Use \`jq\` for JSON, \`rtk grep\` or \`llm-tldr search\` for text, \`fastedit\` for edits."
-    fi
-    ;;
-  head|tail)
-    SUGGESTION="Use \`rtk read\` instead of $RAW — reads relevant slices with intelligent filtering."
-    ;;
-  git)
-    case "$CMD" in
-      *"git status"*) SUGGESTION="Use \`rtk git status\` — compact, 1 line instead of 20." ;;
-      *"git diff"*)   SUGGESTION="Use \`rtk git diff\` or \`rtk diff\` — only changed lines." ;;
-      *"git log"*)    SUGGESTION="Use \`rtk git log\` — hashes + messages only." ;;
-    esac
-    ;;
-  echo)
-    SUGGESTION="Don't use \`echo\` for file creation or debug output. Use \`fastedit\` for files, or just state what you're doing directly."
-    ;;
-  export)
-    SUGGESTION="\`export\` can leak secrets. Ask the captain to set env vars instead."
-    ;;
-  pip)
-    SUGGESTION="Use \`uv pip\` instead of pip — faster, simpler."
-    ;;
-  pytest)
-    SUGGESTION="Use \`rtk pytest\` instead of pytest — compact output, failures only."
-    ;;
-  security)
-    SUGGESTION="\`security\` accesses the macOS Keychain. Ask the captain for approval first."
-    ;;
-  sudo)
-    SUGGESTION="\`sudo\` is blocked. Ask the captain to handle this manually."
-    ;;
-  diff)
-    SUGGESTION="Use \`rtk diff\` instead of diff — only changed lines, compresses output."
-    ;;
-esac
-
-# If a specific tool was blocked but the agent used a compound command,
-# also mention any additional banned tools found in the chain
-if [ -n "$SUGGESTION" ] && [ -n "$BANNED_TOOLS" ]; then
-  SUGGESTION="$SUGGESTION (Also found banned tools in the chain: $BANNED_TOOLS)"
-fi
-
-if [ -n "$SUGGESTION" ]; then
-  echo "{\"systemMessage\": \"❌ BLOCKED: $SUGGESTION\"}"
+if [ ! -f "$POLICY" ]; then
+  # Fail open with a stderr breadcrumb — better than blocking everything.
+  echo "tool-guard: policy file not found at $POLICY" >&2
   exit 0
 fi
+
+# ---------- read event ----------
+INPUT="$(cat)"
+TOOL="$(printf '%s' "$INPUT" | jq -r '.tool_name // ""')"
+
+# ---------- helpers ----------
+emit_deny() {
+  # $1 = reason
+  jq -n --arg reason "$1" '{
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: $reason
+    }
+  }'
+  exit 0
+}
+
+emit_allow() { exit 0; }
+
+# Look up a redirect suggestion from policy.redirect (returns empty if none).
+redirect_for() {
+  jq -r --arg k "$1" '.redirect[$k] // empty' "$POLICY"
+}
+
+# ---------- native tool gating (Read / Grep / Glob) ----------
+case "$TOOL" in
+  Read)
+    if jq -e '.native_opencode_deny | index("read")' "$POLICY" >/dev/null; then
+      sug="$(redirect_for cat)"
+      [ -z "$sug" ] && sug="rtk read"
+      emit_deny "Native Read tool is disabled by tool-policy.json (native_opencode_deny). Use Bash with \`$sug\` instead."
+    fi
+    emit_allow
+    ;;
+  Grep)
+    if jq -e '.native_opencode_deny | index("grep")' "$POLICY" >/dev/null; then
+      sug="$(redirect_for grep)"
+      [ -z "$sug" ] && sug="rtk grep"
+      emit_deny "Native Grep tool is disabled by tool-policy.json (native_opencode_deny). Use Bash with \`$sug\` instead."
+    fi
+    emit_allow
+    ;;
+  Glob)
+    if jq -e '.native_opencode_deny | index("glob")' "$POLICY" >/dev/null; then
+      sug="$(redirect_for find)"
+      [ -z "$sug" ] && sug="rtk find"
+      emit_deny "Native Glob tool is disabled by tool-policy.json (native_opencode_deny). Use Bash with \`$sug\` instead."
+    fi
+    emit_allow
+    ;;
+  List)
+    if jq -e '.native_opencode_deny | index("list")' "$POLICY" >/dev/null; then
+      sug="$(redirect_for ls)"
+      [ -z "$sug" ] && sug="rtk ls"
+      emit_deny "Native List tool is disabled by tool-policy.json (native_opencode_deny). Use Bash with \`$sug\` instead."
+    fi
+    emit_allow
+    ;;
+  Bash|Shell) : ;;      # Shell = Cursor's name for bash; fall through to matcher
+  *)    emit_allow ;;   # not our concern
+esac
+
+# ---------- Bash policy matching ----------
+CMD="$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""')"
+[ -z "$CMD" ] && emit_allow
+
+# Trim leading whitespace, drop a leading `secret-cache exec -- ` prefix because
+# that wrapper passes its tail through (the inner command is what we actually
+# care about gating).
+TRIMMED="${CMD#"${CMD%%[![:space:]]*}"}"
+case "$TRIMMED" in
+  "secret-cache exec -- "*) INNER="${TRIMMED#secret-cache exec -- }" ;;
+  *)                         INNER="$TRIMMED" ;;
+esac
+
+# First token = the binary the agent is invoking.
+read -r FIRST _ <<< "$INNER"
+
+# Match a command against a list of policy keys, longest-prefix-wins so that
+# multi-word entries ("git push", "du -s") take precedence over single-word ones
+# ("git", "du"). Returns the matched key on stdout.
+#   single-token key  ("git")     → matches if FIRST token equals the key
+#   multi-token key   ("git push") → matches only as a full word-prefix of CMD
+match_in_list() {
+  # $1 = jq path producing keys, $2 = command to test
+  local keys cmd k best
+  keys="$(jq -r "$1" "$POLICY")"
+  cmd="$2"
+  best=""
+  while IFS= read -r k; do
+    [ -z "$k" ] && continue
+    if [[ "$k" == *" "* ]]; then
+      # multi-token: require full word-prefix match
+      case "$cmd " in
+        "$k "*) ;;
+        *) continue ;;
+      esac
+    else
+      # single-token: only the leading binary
+      [ "$k" = "$FIRST" ] || continue
+    fi
+    # Keep the longest matching key (most specific wins).
+    if [ "${#k}" -gt "${#best}" ]; then
+      best="$k"
+    fi
+  done <<< "$keys"
+  [ -n "$best" ] && { echo "$best"; return 0; }
+  return 1
+}
+
+# Precedence (most-specific wins, ask tiers checked before broad denies so that
+# e.g. `git push` is captain_confirm instead of generic `git` deny):
+#   1. bash_allow
+#   2. bash_ask.captain_confirm
+#   3. bash_ask.package_managers
+#   4. bash_deny (any category)
+#   5. default allow
+
+if hit="$(match_in_list '.bash_allow | keys[]' "$INNER")"; then
+  emit_allow
+fi
+
+if hit="$(match_in_list '.bash_ask.captain_confirm[]' "$INNER")"; then
+  emit_deny "\`$hit\` requires the captain's confirmation. Tell the captain what you want to run and why, then retry once they approve."
+fi
+
+if hit="$(match_in_list '.bash_ask.package_managers[]' "$INNER")"; then
+  emit_deny "\`$hit\` (package manager) is in the ask tier. Get the captain's go-ahead before installing/modifying packages, then retry."
+fi
+
+if hit="$(match_in_list '[.bash_deny[][]] | .[]' "$INNER")"; then
+  sug="$(redirect_for "$hit")"
+  [ -z "$sug" ] && sug="$(redirect_for "$FIRST")"
+  if [ -n "$sug" ]; then
+    emit_deny "\`$FIRST\` is denied by tool-policy.json. Use \`$sug\` instead."
+  else
+    emit_deny "\`$FIRST\` is denied by tool-policy.json (no redirect configured — ask the captain)."
+  fi
+fi
+
+# OpenCode's "*": "ask" has no Claude analogue (no ask UI). Anything not
+# enumerated falls through to allow — matches the "only gate known-risky" intent.
+emit_allow

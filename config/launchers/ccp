@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Claude Code via Pioneer gateway (profile: pioneer).
+set -e
+exec ~/bin/claude-launch run pioneer --dangerously-skip-permissions "$@"

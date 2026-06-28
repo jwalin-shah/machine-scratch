@@ -1,0 +1,12 @@
+{
+  "model": "pioneer/pioneer/auto",
+  "small_model": "pioneer/pioneer/auto",
+  "agent": {
+    "build": {
+      "model": "pioneer/pioneer/auto"
+    },
+    "review": {
+      "model": "pioneer/pioneer/auto"
+    }
+  }
+}

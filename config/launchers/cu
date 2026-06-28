@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Cursor Agent CLI — uses Cursor account auth, not secret-cache.
+# Installed via the official curl installer (https://cursor.com/install), NOT the
+# Homebrew cask. The cask quarantines its unsigned native modules and macOS deletes
+# them on first dlopen. See agent-rules/KNOWN_ISSUES.md.
+set -euo pipefail
+exec "$HOME/.local/bin/cursor-agent" "$@"

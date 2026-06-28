@@ -1,0 +1,129 @@
+{
+  "version": 6,
+  "description": "Source of truth for agent tool policy. OpenCode bash permissions in config/opencode/opencode.json must stay in sync with bash_allow, bash_deny, and bash_ask below.",
+  "bash_allow": {
+    "rtk": "All rtk subcommands (read, grep, ls, find, git, gh, diff, test, \u2026)",
+    "du -s": "Parseable disk usage only \u2014 not human-oriented dust",
+    "du -sh": "Parseable disk usage with human suffix",
+    "jq": "JSON parsing",
+    "yq": "YAML parsing",
+    "fastedit": "AST-aware edits",
+    "llm-tldr": "Repo structure/arch/search",
+    "uv": "Python package runner",
+    "gh-axi": "Token-efficient GitHub CLI (AXI)",
+    "lavish-axi": "Human review surface (AXI)",
+    "chrome-devtools-axi": "Browser automation (AXI)",
+    "ctx7": "Context7 docs lookup (also installs find-docs skill)",
+    "cognee-cli": "Graph-based session memory",
+    "cocoindex-code": "Code indexing CLI",
+    "ccc": "cocoindex-code short alias",
+    "treehouse": "Pool of reusable git worktrees (kunchenguid)",
+    "githits": "Indexed search/grep/read across open-source code (CLI, no MCP)",
+    "inf": "Inference.net (Catalyst) CLI \u2014 gateway, traces, evals, datasets, training",
+    "pioneer": "Pioneer (Fastino) CLI \u2014 datasets, training, evals, inference",
+    "bun": "Required runtime for the Pioneer CLI",
+    "gtimeout": "Bound live agent smoke tests on macOS (GNU coreutils timeout)",
+    "timeout": "Bound live agent smoke tests where GNU timeout is available",
+    "secret-cache exec": "Provider key injection"
+  },
+  "bash_deny": {
+    "native_read_search_list": [
+      "cat",
+      "ls",
+      "grep",
+      "find"
+    ],
+    "direct_cli_use_rtk_instead": [
+      "rg",
+      "eza",
+      "fd",
+      "bat",
+      "dust"
+    ],
+    "direct_vcs_use_rtk_or_axi_instead": [
+      "git",
+      "gh"
+    ],
+    "disk": [
+      "du"
+    ],
+    "destructive_or_sensitive": [
+      "rm",
+      "sudo",
+      "security",
+      "export"
+    ],
+    "gnu_coreutils_bypass": [
+      "gcat",
+      "gls",
+      "ggrep",
+      "gfind",
+      "gdu",
+      "gsed",
+      "gawk"
+    ]
+  },
+  "bash_ask": {
+    "default": "*",
+    "package_managers": [
+      "brew",
+      "npm",
+      "pnpm"
+    ],
+    "captain_confirm": [
+      "git push",
+      "git clean",
+      "git reset",
+      "chmod 777",
+      "chown",
+      "launchctl",
+      "brew uninstall"
+    ]
+  },
+  "native_opencode_deny": [
+    "read",
+    "grep",
+    "glob",
+    "list"
+  ],
+  "redirect": {
+    "cat": "rtk read",
+    "ls": "rtk ls or rtk tree",
+    "grep": "rtk grep",
+    "find": "rtk find",
+    "rg": "rtk grep",
+    "eza": "rtk ls or rtk tree",
+    "fd": "rtk find",
+    "bat": "rtk read",
+    "dust": "du -s (parseable bytes, not human tree)",
+    "du": "du -s or du -sh only",
+    "git": "rtk git \u2026",
+    "gh": "rtk gh \u2026 or gh-axi \u2026",
+    "curl": "webfetch or rtk wget when fetching URLs",
+    "pip": "uv pip",
+    "pytest": "rtk test",
+    "diff": "rtk diff",
+    "gcat": "rtk read",
+    "gls": "rtk ls or rtk tree",
+    "ggrep": "rtk grep",
+    "gfind": "rtk find",
+    "gdu": "du -s or du -sh only",
+    "gsed": "fastedit edit or jq/yq for structured data",
+    "gawk": "jq/yq for structured data or rtk grep for text"
+  },
+  "skills_installed": {
+    "find-docs": "Context7 (~/.agents/skills/find-docs)",
+    "pioneer-api": "House Pioneer skill (symlinked from skills/pioneer-api)",
+    "inference-net": "House Inference.net skill (symlinked from skills/inference-net)",
+    "tool-policy": "House tool policy skill (symlinked from skills/tool-policy/)"
+  },
+  "policy_no_mcp": "We use CLIs + Skills rather than MCP servers. Context7, GitHits, and Inference.net all offer CLI/Skills modes and we use those exclusively.",
+  "planned_or_unverified": [
+    "fm-tasks"
+  ],
+  "secret_policy": {
+    "source_of_truth": "Infisical",
+    "runtime_injection": "secret-cache exec -- <command>",
+    "never_global_export": true
+  }
+}

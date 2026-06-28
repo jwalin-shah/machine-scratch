@@ -1,0 +1,82 @@
+# claude-endpoints.toml — endpoint profiles for `claude-launch`.
+#
+# Adding a new endpoint is a config edit, NOT a code change: copy a
+# [profiles.<name>] block, point base_url + key at the new gateway, then call
+# `claude-launch run <name>`. Verify without launching a session via
+# `claude-launch check <name>`.
+#
+# Secrets are NEVER stored here. key.source = "infisical" resolves at launch
+# from `infisical secrets --path <path> --env dev --plain`; key.env names an
+# env var that overrides Infisical when set.
+
+[defaults]
+claude_bin = "/opt/homebrew/bin/claude"
+logfile = "~/.claude/logs/launch.log"
+# Preflight pings <base_url>/v1/models before launch. With block_on_dead the
+# launch aborts ONLY when the endpoint is fully unreachable (connection refused,
+# DNS failure, timeout). A reachable-but-erroring endpoint (401/404/5xx) or a
+# merely-slow one warns and still launches.
+preflight = true
+preflight_timeout = 5.0
+preflight_block_on_dead = true
+slow_warn_ms = 3000.0
+
+# --- OAuth profiles: just a config dir, no endpoint override -----------------
+# These talk to api.anthropic.com via OAuth; there is no local key to test and
+# no gateway to discover, so preflight is off.
+
+[profiles.a]
+config_dir = "~/.claude-a"
+preflight = false
+
+[profiles.b]
+config_dir = "~/.claude-b"
+preflight = false
+
+# --- Gateway / custom endpoints ---------------------------------------------
+
+# Tokenrouter — direct, no proxy. Serves Anthropic-style /v1/messages natively.
+# The picker's built-in alias slots are REMAPPED to tokenrouter models via the
+# ANTHROPIC_DEFAULT_*_MODEL env vars (valid for LLM gateways). Selecting "Opus"
+# routes to deepseek, "Sonnet" to glm-5.2, etc. — Claude Code shows familiar
+# names, requests go to our models. MiniMax-M3 fills the one custom slot.
+# Discovery is OFF — only the 5 remapped slots (Opus/Sonnet/Haiku/Fable/Custom)
+# appear in the picker, keeping the UI clean and predictable.
+# The old LiteLLM proxy on :4002 caused 60-120s cold-starts; bypassed 2026-06-25.
+#   Opus   -> deepseek/deepseek-v4-flash    (also the launch default — fast, cheap)
+#   Sonnet -> z-ai/glm-5.2                   (cheap, strong alternative)
+#   Haiku  -> moonshotai/kimi-k2.7-code
+#   Fable  -> x-ai/grok-build-0.1
+#   custom -> MiniMax-M3
+[profiles.token]
+config_dir = "~/.claude-token"
+base_url = "https://api.tokenrouter.com"
+gateway_discovery = false
+custom_model_option = "MiniMax-M3"
+key.source = "infisical"
+key.path = "/providers"
+key.field = "TOKENROUTER_CC_API_KEY"
+key.env = "TOKENROUTER_CC_API_KEY"
+
+[profiles.token.env]
+ANTHROPIC_DEFAULT_OPUS_MODEL = "deepseek/deepseek-v4-flash"
+ANTHROPIC_DEFAULT_SONNET_MODEL = "z-ai/glm-5.2"
+ANTHROPIC_DEFAULT_HAIKU_MODEL = "moonshotai/kimi-k2.7-code"
+ANTHROPIC_DEFAULT_FABLE_MODEL = "x-ai/grok-build-0.1"
+
+# Pioneer — commercial Anthropic-compatible gateway.
+[profiles.pioneer]
+config_dir = "~/.claude-pioneer"
+base_url = "https://api.pioneer.ai"
+base_url_env = "PIONEER_BASE_URL"
+gateway_discovery = true
+custom_model_option = "anthropic/pioneer-auto"  # sentinel that skips the login check
+key.source = "infisical"
+key.path = "/providers/pioneer"
+key.field = "api_key"
+key.env = "PIONEER_API_KEY"
+
+# NVIDIA NIM removed from Claude Code profiles.
+# Reason: NVIDIA NIM is OpenAI-only; translating through :4001 proxy adds 1.1s
+# latency (2.5s vs 1.4s direct). NVIDIA is better accessed via Codex CLI, which
+# speaks OpenAI natively. For Claude Code fallbacks, use tokenrouter or pioneer.

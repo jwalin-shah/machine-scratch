@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Codex CLI. No secret injection (add secret-scoped variant later).
+set -euo pipefail
+exec /opt/homebrew/bin/codex "$@"

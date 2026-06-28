@@ -1,0 +1,60 @@
+# Pioneer — docs index (mirror of https://docs.pioneer.ai/llms.txt)
+# Captured 2026-06-27. Source of truth is the live URL above.
+
+> Docs for building, fine-tuning, evaluating, and deploying models with Pioneer.
+
+## Core
+- CLI installation                 https://docs.pioneer.ai/CLI-Installation.md
+- Quickstart                       https://docs.pioneer.ai/quickstart.md
+- Authentication                   https://docs.pioneer.ai/authentication.md
+- Introduction                     https://docs.pioneer.ai/introduction.md
+- Pricing                          https://docs.pioneer.ai/pricing.md
+- FAQ                              https://docs.pioneer.ai/faq.md
+
+## API reference
+- Overview (base URL, auth)        https://docs.pioneer.ai/api-reference/overview.md
+- Authentication                   https://docs.pioneer.ai/api-reference/authentication.md
+- Errors (401/402/404/422/429/500) https://docs.pioneer.ai/api-reference/errors.md
+- Rate limits                      https://docs.pioneer.ai/api-reference/rate-limits.md
+- Prompt caching                   https://docs.pioneer.ai/api-reference/prompt-caching.md
+- Datasets                         https://docs.pioneer.ai/api-reference/datasets.md
+- Evaluations                      https://docs.pioneer.ai/api-reference/evaluations.md
+- Synthetic data                   https://docs.pioneer.ai/api-reference/synthetic-data.md
+- Training jobs                    https://docs.pioneer.ai/api-reference/training-jobs.md
+
+## Inference endpoints
+- POST /inference (native)         https://docs.pioneer.ai/api-reference/inference/pioneer.md
+- /v1/chat/completions (OpenAI)    https://docs.pioneer.ai/api-reference/inference/openai-compatible.md
+- /v1/messages (Anthropic)         https://docs.pioneer.ai/api-reference/inference/anthropic-compatible.md
+- Inference history & feedback     https://docs.pioneer.ai/api-reference/inference/history.md
+- Integrating with Opus 4.8        https://docs.pioneer.ai/api-reference/integrating-with-opus-4-8.md
+
+## Concepts
+- Datasets                         https://docs.pioneer.ai/concepts/datasets.md
+- Evaluations                      https://docs.pioneer.ai/concepts/evaluations.md
+- Inference                        https://docs.pioneer.ai/concepts/inference.md
+- Models (encoders/decoders)       https://docs.pioneer.ai/concepts/models.md
+- Router                           https://docs.pioneer.ai/concepts/router.md
+- Training                         https://docs.pioneer.ai/concepts/training.md
+- GLiGuard (safety SLM)            https://docs.pioneer.ai/concepts/g-li-guard.md
+- GLiNER2-PII                      https://docs.pioneer.ai/concepts/g-li-ner-2-pii.md
+
+## Guides
+- Adaptive Inference               https://docs.pioneer.ai/guides/adaptive-inference.md
+- Agent Skills (SKILL.md)          https://docs.pioneer.ai/guides/agent-skills.md
+- Fine-tune classification         https://docs.pioneer.ai/guides/fine-tune-classification.md
+- Fine-tune extraction             https://docs.pioneer.ai/guides/fine-tune-extraction.md
+- Fine-tune LLM (SFT/GRPO/DPO)     https://docs.pioneer.ai/guides/fine-tune-llm.md
+- Fine-tune NER                    https://docs.pioneer.ai/guides/fine-tune-ner.md
+- Synthetic data                   https://docs.pioneer.ai/guides/synthetic-data.md
+
+## Agent integrations
+- Claude Code                      https://docs.pioneer.ai/claude-code.md
+- Codex                            https://docs.pioneer.ai/codex.md
+- Cursor                           https://docs.pioneer.ai/cursor.md
+- OpenCode                         https://docs.pioneer.ai/opencode.md
+- Hermes                           https://docs.pioneer.ai/hermes.md
+- OpenClaw                         https://docs.pioneer.ai/openclaw.md
+
+## OpenAPI
+- openapi.json                     https://docs.pioneer.ai/openapi.json

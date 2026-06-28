@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# OpenCode — TokenRouter cheap default. API key via secret-cache exec.
+set -euo pipefail
+export OPENCODE_CONFIG="$HOME/.config/opencode/profiles/ot.json"
+exec "$HOME/.local/bin/secret-cache" exec -- /opt/homebrew/bin/opencode "$@"

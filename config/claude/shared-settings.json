@@ -1,0 +1,19 @@
+{
+  "skipDangerousModePermissionPrompt": true,
+  "verbose": false,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/jwalinshah/bin/tool-guard.sh",
+            "timeout": 5,
+            "statusMessage": "Checking tool choice..."
+          }
+        ]
+      }
+    ]
+  }
+}

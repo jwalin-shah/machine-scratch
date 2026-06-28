@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# OpenCode — ChatGPT Plus (OpenAI OAuth). GPT 5.5. No TokenRouter / no secret-cache.
+set -euo pipefail
+ROOT="${MACHINE_SCRATCH_ROOT:-$HOME/projects/machine-scratch}"
+export OPENCODE_CONFIG="$HOME/.config/opencode/profiles/oo.json"
+exec /opt/homebrew/bin/opencode "$@"

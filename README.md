@@ -13,11 +13,24 @@ scripts/        — helper scripts
 PHILOSOPHY.md   — principles we operate by
 ```
 
-## Quick start (new Mac)
+## Source of truth
+
+`machine-scratch` is the control repo for the active machine setup. Every
+config, launcher, repo, provider, and daemon must be reviewed here before it is
+promoted into the live machine.
+
+`bin/bootstrap.sh` is reference-only historical material. Do not run it as the
+source of truth on an existing machine. Use it to mine ideas, then promote only
+reviewed pieces through small scripts like `bin/install-active-config.sh`.
+
+## Quick start (reference only)
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/jwalin-shah/machine-scratch/main/bin/bootstrap.sh)"
 ```
+
+Do not use this command on an already configured machine unless the script has
+been freshly reviewed for the target machine.
 
 ## Core tools
 
