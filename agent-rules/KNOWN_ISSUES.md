@@ -148,3 +148,10 @@ rtk test bin/test-tool-guard.sh
 - [ ] Live TUI smoke
 - [ ] GLOBAL.md permission-flow section
 - [ ] Optional: pmset/system_profiler in bash_allow
+
+## bun -e / script-interpreter file-write bypass
+
+`bun -e` with `fs.writeFileSync` is a file-write bypass via script interpreter, similar to
+`python3 -c "..."`. Should be denied in tool policy (add `bun -e` patterns to deny list).
+Allowed because `bun *` matches any bun invocation. Fix: add explicit deny for `bun -e *`.
+
