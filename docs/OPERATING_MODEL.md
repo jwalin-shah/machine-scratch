@@ -18,7 +18,8 @@ Every machine capability follows this path:
 ## Roles
 
 - `machine-scratch`: current source of truth, agent rules, install fragments, status docs.
-- `~/projects/examples/`: reference repos (`machine-bootstrap`, `quota-core`, etc.); not active machine state.
+- `~/projects/examples/`: reference repos; not active machine state. See
+  `docs/EXAMPLES_INVENTORY.md` for the full list and harness log paths.
 - `_reference` repos: material to learn from, not active machine state.
 
 ## What We Avoid

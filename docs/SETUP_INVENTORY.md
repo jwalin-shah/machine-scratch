@@ -99,10 +99,19 @@ and OpenCode native allow lists. Codex allows via `tool-guard.sh` hook.
 
 ## Reference Only
 
+All under `~/projects/examples/` — see `docs/EXAMPLES_INVENTORY.md`.
+
 | Item | Path | Notes |
 |---|---|---|
-| machine-bootstrap | `~/projects/examples/machine-bootstrap` | Historical; do not point active config here |
+| machine-bootstrap | `~/projects/examples/machine-bootstrap` | Historical bootstrap; harness log specs |
 | quota-core | `~/projects/examples/quota-core` | secret-cache source reference |
+| firstmate | `~/projects/examples/firstmate` | Fleet orchestration + transcript import scripts |
+| fm-sessiond | `~/projects/examples/fm-sessiond` | Session analytics (ChooChoo successor) |
+| mintmux | `~/projects/examples/mintmux` | Terminal/session layer reference |
+| memjuice | `~/projects/examples/memjuice` | Cross-harness memory reference |
+| go-utils | `~/projects/examples/go-utils` | Shared Go libs / agent-doctor |
+| treehouse | `~/projects/examples/treehouse` | Worktree pool reference |
+| agent-flight-recorder | `~/projects/examples/agent-flight-recorder` | Session recorder — review before fm-sessiond v2 |
 
 ## Not installed / not used
 

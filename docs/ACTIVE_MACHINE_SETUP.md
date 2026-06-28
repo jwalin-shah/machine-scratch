@@ -7,8 +7,11 @@ existing machine.
 ## Active Repos
 
 - `~/projects/machine-scratch` — design/control, agent rules, installer, tests
-- `~/projects/examples/machine-bootstrap` — reference only
-- `~/projects/examples/quota-core` — reference for `secret-cache` source
+
+Reference clones under `~/projects/examples/` (not active) — full list in
+`docs/EXAMPLES_INVENTORY.md`. Includes `firstmate`, `fm-sessiond`, `mintmux`,
+`memjuice`, `go-utils`, `treehouse`, `agent-flight-recorder`, `machine-bootstrap`,
+`quota-core`.
 
 ## Agent Rules and Skills
 
