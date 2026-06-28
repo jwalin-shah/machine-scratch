@@ -41,6 +41,21 @@ deny_keys()  { jq -r '[.bash_deny[][]] | .[]' "$POLICY"; }
 ask_keys()   {
   jq -r '(.bash_ask.captain_confirm // []) + (.bash_ask.package_managers // []) | .[]' "$POLICY"
 }
+# deny_keys_filtered — same as deny_keys but excludes keys that are a
+# word-prefix of any allow or ask key (e.g. "du" → "du -s", "git" → "git push").
+# Prevents native permission systems from applying a broad deny (e.g. Bash(du:*))
+# that overrides a more specific allow/ask (Bash(du -s:*)).
+deny_keys_filtered() {
+  local allow_ask
+  allow_ask="$(allow_keys; ask_keys)"
+  deny_keys | while IFS= read -r k; do
+    skip=0
+    while IFS= read -r a; do
+      case "$a" in "$k "*) skip=1; break ;; esac
+    done <<< "$allow_ask"
+    [ "$skip" -eq 0 ] && printf '%s\n' "$k"
+  done
+}
 
 # ---------- render_claude ----------
 # Claude pattern syntax: Bash(<glob>). The glob matches the whole command line.
@@ -48,7 +63,7 @@ ask_keys()   {
 render_claude() {
   local allow_json deny_json ask_json native_deny_json
   allow_json=$(allow_keys | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
-  deny_json=$(deny_keys  | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
+  deny_json=$(deny_keys_filtered | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
   ask_json=$(ask_keys    | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
   # native_opencode_deny -> Claude: Read/Grep/Glob (not List — Claude has no List tool)
   native_deny_json=$(jq '.native_opencode_deny | map(select(. != "list")) | map(. | ascii_upcase[0:1] + .[1:])' "$POLICY")
@@ -73,7 +88,7 @@ render_claude() {
 render_cursor() {
   local allow_json deny_json
   allow_json=$(allow_keys | jq -R . | jq -s 'map("Shell(" + . + " *)", "Shell(" + . + ")") | unique')
-  deny_json=$(deny_keys  | jq -R . | jq -s 'map("Shell(" + . + " *)", "Shell(" + . + ")") | unique')
+  deny_json=$(deny_keys_filtered | jq -R . | jq -s 'map("Shell(" + . + " *)", "Shell(" + . + ")") | unique')
 
   jq -n \
     --argjson allow "$allow_json" \
@@ -91,20 +106,26 @@ render_opencode() {
   local bash_map_json native_block
   bash_map_json=$(
     {
-      echo '{}'
+      # "*" first so explicit allow/deny patterns override it (last match wins)
+      printf '{"*":"ask"}\n'
       allow_keys | while IFS= read -r k; do
         printf '{"%s":"allow","%s *":"allow"}\n' "$k" "$k"
       done
+      # Pipe-deny patterns: override allow-tier tools like rtk/jq that would
+      # otherwise pipe to head/tail/less/more without reaching the plugin.
+      printf '{"* | head":"deny","* | head *":"deny","* | tail":"deny","* | tail *":"deny","* | less":"deny","* | more":"deny"}\n'
       ask_keys | while IFS= read -r k; do
         printf '{"%s":"ask","%s *":"ask"}\n' "$k" "$k"
       done
-      deny_keys | while IFS= read -r k; do
+      deny_keys_filtered | while IFS= read -r k; do
         printf '{"%s":"deny","%s *":"deny"}\n' "$k" "$k"
       done
-      printf '{"*":"ask"}\n'
     } | jq -s 'add'
   )
-  native_block=$(jq '.native_opencode_deny | map({(.): "deny"}) | add // {}' "$POLICY")
+  native_block=$(jq '
+    (.native_opencode_deny | map({(.): "deny"}) | add // {}) +
+    (if (.native_write_deny | index("edit")) then {"edit": "deny"} else {} end)
+  ' "$POLICY")
 
   jq -n \
     --argjson bash "$bash_map_json" \
@@ -147,7 +168,7 @@ render_antigravity() {
   local guard="${TOOL_GUARD_ANTIGRAVITY_PATH:-$HOME/bin/tool-guard-antigravity.sh}"
   local allow_json deny_json ask_json
   allow_json=$(allow_keys | jq -R . | jq -s 'map("command(" + . + ")")')
-  deny_json=$(deny_keys  | jq -R . | jq -s 'map("command(" + . + ")")')
+  deny_json=$(deny_keys_filtered | jq -R . | jq -s 'map("command(" + . + ")")')
   ask_json=$(ask_keys    | jq -R . | jq -s 'map("command(" + . + ")")')
   jq -n     --arg g "$guard"     --argjson allow "$allow_json"     --argjson deny "$deny_json"     --argjson ask "$ask_json" '
     {

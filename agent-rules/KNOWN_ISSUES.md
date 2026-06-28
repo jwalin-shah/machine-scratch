@@ -116,9 +116,8 @@ deny pipeline pagers (`| head/tail/less/more`) with redirect:
 
 ### Known gaps (fix later)
 
-1. **Allow-tier bypass in tool-guard.sh** — pipeline check runs *after* `bash_allow` emit_allow.
-   `rtk read x | head` and `jq . f | head` **ALLOW** on Cursor/Claude/Codex/Agy.
-   OpenCode plugin does not have this bug. Fix: run pipeline check before every `emit_allow`.
+1. ~~Allow-tier bypass in tool-guard.sh~~ **FIXED 2026-06-27** — pipe check moved before `emit_allow`.
+   OpenCode: `"* | head *":"deny"` patterns added to rendered permission config.
 
 2. **Bypass variants not matched** — ALLOW: `| /usr/bin/head`, `| command head`,
    `| HEAD` (case-sensitive), `| ghead`. Extend regex or normalize before match.
@@ -134,20 +133,18 @@ deny pipeline pagers (`| head/tail/less/more`) with redirect:
 ### Test matrix
 
 ```bash
-rtk test bin/test-tool-guard-pipes.sh   # 16 cases; 13 pass / 3 fail (2026-06-27)
+rtk test bin/test-tool-guard-pipes.sh   # 16 cases; all pass after 2026-06-27 fix
 rtk test bin/test-tool-guard.sh
 ```
 
-Drive fixes from failures: rtk+pager and jq+pager (allow-tier bypass).
+### Checklist (2026-06-27)
 
-After edits: `bin/install-active-config.sh`
-
-### Later checklist
-
-- [ ] Pipeline check before all `emit_allow` in tool-guard.sh
+- [x] Pipeline check before all `emit_allow` in tool-guard.sh
+- [x] OpenCode pipe-deny patterns in rendered permission config
+- [x] `"*":"ask"` moved to first in OpenCode render order
+- [x] Wire test-tool-guard-pipes.sh into test-all-policy.sh
 - [ ] Regex: absolute path, command wrapper, case-insensitive, ghead
 - [ ] Plugin pipe cases in test-opencode-permissions.sh
-- [ ] Wire test-tool-guard-pipes.sh into test-all-policy.sh
 - [ ] Live TUI smoke
 - [ ] GLOBAL.md permission-flow section
 - [ ] Optional: pmset/system_profiler in bash_allow

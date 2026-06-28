@@ -133,6 +133,7 @@
     "write": "fastedit edit via Shell",
     "strreplace": "fastedit edit via Shell",
     "delete": "ask captain",
+    "edit": "fastedit edit via Shell",
     "echo": "jq -n for JSON; rtk test for hook smoke — do not pipe echo to tools",
     "printf": "jq -n for JSON; rtk test for hook smoke — do not pipe echo to tools"
   },
@@ -161,6 +162,7 @@
   "native_write_deny": [
     "write",
     "strreplace",
-    "delete"
+    "delete",
+    "edit"
   ]
 }

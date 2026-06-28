@@ -8,6 +8,7 @@ after any change. Update status here when a row moves to DONE.
 | Check | Command | Status |
 |---|---|---|
 | Hook logic (54+ cases) | `bin/test-tool-guard.sh` | DONE |
+| Pipeline pager deny (16 cases) | `bin/test-tool-guard-pipes.sh` | DONE (wired into test-all-policy.sh) |
 | rtk stack smoke | `bin/verify-rtk-stack.sh` | DONE |
 | Codex hooks schema | `bin/test-codex-hooks.sh` | DONE |
 | Cursor hooks + adapter | `bin/test-cursor-hooks.sh` | DONE |
@@ -25,7 +26,7 @@ after any change. Update status here when a row moves to DONE.
 | `githits`, `ctx7`, `llm-tldr` | yes | yes | yes |
 | `cognee-cli`, `cocoindex-code`, `treehouse` | yes | yes | yes |
 | `inf`, `pioneer` | yes | yes | yes |
-| `fastedit` | yes | yes | **partial** — see below |
+| `fastedit` | yes | yes | yes |
 | `fm-tasks` | planned only | no | n/a |
 
 ### fastedit status (2026-06-28)

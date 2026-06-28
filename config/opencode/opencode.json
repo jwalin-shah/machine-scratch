@@ -383,7 +383,7 @@
     }
   },
   "permission": {
-    "edit": "allow",
+    "edit": "deny",
     "read": "deny",
     "grep": "deny",
     "glob": "deny",
@@ -424,7 +424,6 @@
       "treehouse *": "allow",
       "githits": "allow",
       "githits *": "allow",
-      "ctx7 *": "allow",
       "inf": "allow",
       "inf *": "allow",
       "pioneer": "allow",
@@ -450,9 +449,6 @@
       "bat *": "deny",
       "dust": "deny",
       "dust *": "deny",
-      "du": "deny",
-      "git": "deny",
-      "git *": "deny",
       "gh": "deny",
       "gh *": "deny",
       "rm": "deny",

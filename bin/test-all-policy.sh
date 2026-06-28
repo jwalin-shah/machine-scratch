@@ -32,6 +32,9 @@ printf '== install active config ==\n'
 printf '\n== tool-guard hook logic ==\n'
 "$ROOT/bin/test-tool-guard.sh"
 
+printf '\n== pipeline pager deny ==\n'
+"$ROOT/bin/test-tool-guard-pipes.sh"
+
 printf '\n== Codex hooks schema ==\n'
 "$ROOT/bin/test-codex-hooks.sh"
 

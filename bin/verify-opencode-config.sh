@@ -20,7 +20,7 @@ trap 'rm -f "$EXPECTED"' EXIT
 # The live OpenCode config is source config plus the generated permission block
 # from config/tool-policy.json. Compare against that rendered expectation rather
 # than raw source, because permissions are intentionally generated at install time.
-jq --argjson p "$($ROOT/bin/policy-render.sh opencode)" '. * $p' "$SRC" > "$EXPECTED"
+jq --argjson p "$($ROOT/bin/policy-render.sh opencode)" 'del(.permission.bash) * $p' "$SRC" > "$EXPECTED"
 if cmp -s "$EXPECTED" "$LIVE"; then
   ok "opencode.json live copy matches source + rendered tool policy"
 else
@@ -66,7 +66,7 @@ else
   bad "tool-guard plugin not in resolved config"
 fi
 
-for cmd in cat ls grep find rg eza fd bat dust du git gh rm sudo security export gcat gls ggrep gfind gdu gsed gawk; do
+for cmd in cat ls grep find rg eza fd bat dust gh rm sudo security export gcat gls ggrep gfind gdu gsed gawk; do
   action="$(echo "$RESOLVED" | jq -r ".permission.bash[\"$cmd\"] // \"missing\"")"
   if [ "$action" = "deny" ]; then
     ok "permission.bash.$cmd = deny"

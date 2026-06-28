@@ -72,7 +72,7 @@ native_write_policy_key() {
     Write)      echo write ;;
     StrReplace) echo strreplace ;;
     Delete)     echo delete ;;
-    Edit)       echo write ;;
+    Edit)       echo edit ;;
     *)          echo "" ;;
   esac
 }
@@ -146,6 +146,18 @@ esac
 # First token = the binary the agent is invoking.
 read -r FIRST _ <<< "$INNER"
 
+# ---------- pipeline pager check (BEFORE bash_allow emit_allow) ----------
+# Deny | head/tail/less/more regardless of allow-tier status, so that
+#   rtk read x | head    and    jq . f | head
+# get caught on Claude/Codex/Cursor/Agy (OpenCode uses a separate mechanism
+# in its plugin + native permission deny patterns). Run before bash_allow
+# matching so the allow-tier emit_allow never fires for piped commands.
+if [[ "$INNER" =~ \|[[:space:]]*(head|tail|less|more)([[:space:]]|$|\|) ]]; then
+  pipe_cmd="${BASH_REMATCH[1]}"
+  stripped="$(printf '%s' "$INNER" | sed -E 's/[[:space:]]*\|[[:space:]]*(head|tail|less|more)(\ [^|]*)?.*$//')"
+  emit_deny "Do not pipe through \`$pipe_cmd\` (head/tail/less/more are denied). Re-run without the pipe: \`$stripped\`"
+fi
+
 # Match a command against a list of policy keys, longest-prefix-wins so that
 # multi-word entries ("git push", "du -s") take precedence over single-word ones
 # ("git", "du"). Returns the matched key on stdout.
@@ -214,15 +226,6 @@ if hit="$(match_in_list '[.bash_deny[][]] | .[]' "$INNER")"; then
   else
     emit_deny "\`$FIRST\` is denied by tool-policy.json (no redirect configured — ask the captain)."
   fi
-fi
-
-# Pipelines: deny | head/tail/less/more anywhere (first-token check misses
-# e.g. `pmset -g | head -30`). Do not auto-run the stripped command — it may
-# be ask-tier and still needs harness approval.
-if [[ "$INNER" =~ \|[[:space:]]*(head|tail|less|more)([[:space:]]|$|\|) ]]; then
-  pipe_cmd="${BASH_REMATCH[1]}"
-  stripped="$(printf '%s' "$INNER" | sed -E 's/[[:space:]]*\|[[:space:]]*(head|tail|less|more)(\ [^|]*)?.*$//')"
-  emit_deny "Do not pipe through \`$pipe_cmd\` (head/tail/less/more are denied). Re-run without the pipe: \`$stripped\`"
 fi
 
 # OpenCode's "*": "ask" has no Claude analogue (no ask UI). Anything not

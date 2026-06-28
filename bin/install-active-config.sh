@@ -93,7 +93,11 @@ mkdir -p "$HOME/.config/opencode/profiles"
 # the rendered permission block so tool-policy.json wins on permissions.
 cp "$ROOT/config/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 opencode_perms="$(jq -c '.opencode' "$POLICY_OUT")"
-merge_json "$HOME/.config/opencode/opencode.json" "$opencode_perms"
+# Delete existing bash permission object before merge so removed keys
+# (e.g. "git" / "git *" → now filtered by deny_keys_filtered) don't survive.
+jq --argjson p "$opencode_perms" 'del(.permission.bash) * $p' \
+  "$HOME/.config/opencode/opencode.json" > "$HOME/.config/opencode/opencode.json.tmp"
+mv "$HOME/.config/opencode/opencode.json.tmp" "$HOME/.config/opencode/opencode.json"
 cp "$ROOT/config/opencode/plugins/tool-guard/index.js" "$HOME/.config/opencode/plugins/tool-guard/index.js"
 # Silence Node's MODULE_TYPELESS_PACKAGE_JSON warning for the ESM tool-guard plugin.
 printf '%s\n' '{"type":"module"}' > "$HOME/.config/opencode/package.json"
