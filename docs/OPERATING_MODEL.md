@@ -35,7 +35,7 @@ The active machine should be reproducible from reviewed fragments in this repo:
 
 - `agent-rules/` for global agent instructions (symlinked to `~/.agent-rules`).
 - `config/opencode/` for OpenCode providers and permissions.
-- `config/claude/` for `claude-launch` stack (ca/cb/ctoken).
+- `config/claude/` for `claude-launch` stack (ca/ct/ccp).
 - `config/launchers/` for secret-scoped and Claude launch wrappers.
 - `config/launchd/` for user LaunchAgents.
 - `bin/install-active-config.sh` for non-package config installation.

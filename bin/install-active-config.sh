@@ -31,7 +31,6 @@ mkdir -p \
   "$HOME/bin" \
   "$HOME/.claude/logs" \
   "$HOME/.claude-a" \
-  "$HOME/.claude-b" \
   "$HOME/.claude-token" \
   "$HOME/.claude-pioneer" \
   "$HOME/.codex" \
@@ -112,14 +111,15 @@ for f in claude-launch agentlib.py claude-endpoints.toml log_setup.py; do
 done
 chmod 755 "$HOME/bin/claude-launch"
 
-for launcher in ca cb ct ccp cu agy; do
+rm -f "$HOME/bin/cb"
+for launcher in ca ct ccp cu agy; do
   cp "$ROOT/config/launchers/$launcher" "$HOME/bin/$launcher"
   chmod 755 "$HOME/bin/$launcher"
 done
 
 # Claude settings — global + 4 per-account. Each gets hooks + native perms.
 merge_claude_settings "$HOME/.claude/settings.json"
-for account_dir in .claude-a .claude-b .claude-token .claude-pioneer; do
+for account_dir in .claude-a .claude-token .claude-pioneer; do
   merge_claude_settings "$HOME/$account_dir/settings.json"
 done
 

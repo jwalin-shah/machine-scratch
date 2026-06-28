@@ -75,11 +75,10 @@ Short names. Use these instead of bare `opencode`, `claude`, `codex`, or `cursor
 | Command | Route | Notes |
 |---|---|---|
 | `ca` | Account A (OAuth Pro) | Primary — start here |
-| `cb` | Account B (OAuth Pro) | Secondary when A is maxed |
 | `ct` | TokenRouter gateway | API key resolved at launch |
 | `ccp` | Pioneer gateway | Claude Code via Pioneer API |
 
-Each OAuth account needs `/login` once in its config dir (`~/.claude-a`, `~/.claude-b`).
+OAuth account A needs `/login` once in `~/.claude-a`.
 
 ### OpenCode (global policy + per-profile overlay)
 
@@ -109,7 +108,7 @@ Global config lists **58 TokenRouter** and **56 Pioneer** models for mid-session
 
 - **Launchers do not inject secrets.** Use bare commands above.
 - **`secret-cache`** exists for when we add secret-scoped variants later.
-- **`claude-launch`** (ca/cb/ct/ccp) resolves profile keys from Infisical at launch — not via `secret-cache exec`.
+- **`claude-launch`** (ca/ct/ccp) resolves profile keys from Infisical at launch — not via `secret-cache exec`.
 - Do not export provider keys globally.
 
 ---

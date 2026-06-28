@@ -49,8 +49,8 @@ render_claude() {
   allow_json=$(allow_keys | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
   deny_json=$(deny_keys  | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
   ask_json=$(ask_keys    | jq -R . | jq -s 'map("Bash(" + . + ":*)", "Bash(" + . + ")") | unique')
-  # native_opencode_deny: ["read","grep","glob","list"] -> ["Read","Grep","Glob","List"]
-  native_deny_json=$(jq '.native_opencode_deny | map(. | ascii_upcase[0:1] + .[1:])' "$POLICY")
+  # native_opencode_deny -> Claude: Read/Grep/Glob (not List — Claude has no List tool)
+  native_deny_json=$(jq '.native_opencode_deny | map(select(. != "list")) | map(. | ascii_upcase[0:1] + .[1:])' "$POLICY")
 
   jq -n \
     --argjson allow "$allow_json" \

@@ -1,2 +1,0 @@
-#!/bin/bash
-exec ~/bin/claude-launch run b --dangerously-skip-permissions "$@"

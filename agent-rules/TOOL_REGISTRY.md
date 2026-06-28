@@ -48,7 +48,6 @@ Vendor harness schemas: `ctx7 docs` — see `docs/vendor/agent-harnesses/llms.tx
 | Command | Tool | Secrets | Purpose |
 |---|---|---|---|
 | `ca` | Claude Code | Profile key only | Account A (OAuth) |
-| `cb` | Claude Code | Profile key only | Account B (OAuth) |
 | `ct` | Claude Code | TokenRouter key | Claude via TokenRouter |
 | `ccp` | Claude Code | Pioneer key | Claude via Pioneer |
 | `oo` | OpenCode | ChatGPT Plus OAuth | GPT 5.5 fast via OpenAI provider |

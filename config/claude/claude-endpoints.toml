@@ -29,10 +29,6 @@ slow_warn_ms = 3000.0
 config_dir = "~/.claude-a"
 preflight = false
 
-[profiles.b]
-config_dir = "~/.claude-b"
-preflight = false
-
 # --- Gateway / custom endpoints ---------------------------------------------
 
 # Tokenrouter — direct, no proxy. Serves Anthropic-style /v1/messages natively.

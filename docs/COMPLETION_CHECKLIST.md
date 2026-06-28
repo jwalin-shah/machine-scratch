@@ -72,7 +72,6 @@ Tier 1 proves config is correct. Tier 3 proves the harness actually invokes hook
 | Item | Status |
 |---|---|
 | Claude OAuth account A (`ca`) | verify `/login` in `~/.claude-a` |
-| Claude OAuth account B (`cb`) | verify `/login` in `~/.claude-b` |
 | OpenCode `oo` (ChatGPT OAuth) | `opencode providers login` if needed |
 | `ot` / `op` secret-cache keys | `secret-cache refresh` |
 | Codex (`cx`) | uses Codex/ChatGPT account auth |

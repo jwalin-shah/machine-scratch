@@ -59,7 +59,6 @@ Last aligned with live machine via `bin/verify-active-config.sh` + PATH check.
 | Cmd | Binary | Secrets | Notes |
 |---|---|---|---|
 | `ca` | Claude Code | OAuth (account A) | `~/bin/ca` → claude-launch |
-| `cb` | Claude Code | OAuth (account B) | `~/bin/cb` |
 | `ct` | Claude Code | TokenRouter key | `~/bin/ct` |
 | `ccp` | Claude Code | Pioneer key | `~/bin/ccp` |
 | `oo` | OpenCode | ChatGPT Plus OAuth | `~/.local/bin/oo` — no secret-cache |
@@ -118,7 +117,7 @@ These names appear in older docs or as `-axi` variants. We use the base CLI inst
 | Harness | Policy wired | Automated verify | Manual live check |
 |---|---|---|---|
 | OpenCode | Yes | `verify-opencode-config.sh` | Optional: `test-opencode-live.sh ot --quick` |
-| Claude (`ca`) | Yes | `verify-active-config.sh` | Prompt: deny `cat README.md` |
+| Claude (`ca`) | Yes | `verify-active-config.sh` | **DONE** — Tier 3 deny/allow passed |
 | Codex (`cx`) | Yes | `test-codex-hooks.sh` | Prompt: deny `cat README.md` (Bash hook only) |
 | Cursor IDE | Yes | `test-cursor-hooks.sh` | Restart IDE, then same prompt |
 | cursor-agent (`cu`) | Same as Cursor | Same | Same |
@@ -127,9 +126,9 @@ These names appear in older docs or as `-axi` variants. We use the base CLI inst
 
 | Item | Status | Notes |
 |---|---|---|
-| Claude OAuth | Per-account | `/login` once in `~/.claude-a`, `~/.claude-b` |
+| Claude OAuth | Per-account | `/login` once in `~/.claude-a` |
 | OpenAI OAuth (`oo`) | May need login | `opencode providers login` |
-| `fastedit edit` | Broken | Run `fastedit pull --model mlx-8bit` + install `[mlx]` extra |
+| `fastedit edit` | Blocked | Needs parcadei `tldr references` on PATH (MLX+model done) |
 | Antigravity / Daytona | Installed | Workflow docs pending |
 | Live agent confirmation | Manual | One deny/allow prompt per harness after install |
 

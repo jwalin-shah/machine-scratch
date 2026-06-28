@@ -9,7 +9,7 @@
 
 - OpenCode instructions load from `~/.agent-rules/` (symlink to machine-scratch).
 - Claude/Codex hooks → `~/bin/tool-guard.sh`. Cursor hooks → `~/bin/tool-guard-cursor.sh`.
-- Per-account Claude OAuth requires `/login` in each of `~/.claude-a`, `~/.claude-b` once.
+- Per-account Claude OAuth requires `/login` in `~/.claude-a` once.
 
 ## fastedit edit (tldr `references` missing)
 

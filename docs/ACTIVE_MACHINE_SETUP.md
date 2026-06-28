@@ -37,13 +37,13 @@ Configured in `config/opencode/opencode.json`:
 
 | Cmd | Tool | Auth |
 |---|---|---|
-| `ca` / `cb` / `ct` / `ccp` | Claude Code | OAuth / TokenRouter / Pioneer |
+| `ca` / `ct` / `ccp` | Claude Code | OAuth / TokenRouter / Pioneer |
 | `oo` / `ot` / `op` | OpenCode | OAuth / TokenRouter / Pioneer |
 | `cx` | Codex CLI | Codex/ChatGPT account (no secret-cache) |
 | `cu` | cursor-agent | Cursor account |
 | `agy` | Antigravity | Own auth |
 
-OAuth once per Claude account: `/login` in `~/.claude-a`, `~/.claude-b`.
+OAuth for account A: `/login` in `~/.claude-a`.
 
 ## Tool Policy (all harnesses)
 
